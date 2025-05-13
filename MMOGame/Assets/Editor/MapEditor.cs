@@ -5,8 +5,6 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.IO;
 
-
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -48,11 +46,6 @@ public class MapEditor : MonoBehaviour
                 }
             }
         }
-
-        //if (EditorUtility.DisplayDialog("Hello World", "Create?", "Create", "Cancel"))
-        //{
-        //    new GameObject("Hello World");
-        //}
     }
 
 #endif

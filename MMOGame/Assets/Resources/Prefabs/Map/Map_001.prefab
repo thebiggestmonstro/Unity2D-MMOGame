@@ -64,7 +64,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &6339296731490170177
 Transform:
   m_ObjectHideFlags: 0
@@ -380,7 +380,6 @@ GameObject:
   - component: {fileID: 8407304552701858133}
   - component: {fileID: 2947143208190959334}
   - component: {fileID: 839684348731382639}
-  - component: {fileID: 8877618736557279450}
   m_Layer: 0
   m_Name: Tilemap_Collision
   m_TagString: Untagged
@@ -945,7 +944,7 @@ TilemapRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: -10
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
@@ -954,20 +953,6 @@ TilemapRenderer:
   m_Mode: 0
   m_DetectChunkCullingBounds: 0
   m_MaskInteraction: 0
---- !u!114 &8877618736557279450
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4828332698763698673}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b3d7ee336fa410428f6dbeb375b22a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _tileMap: {fileID: 2947143208190959334}
-  _tile: {fileID: 11400000, guid: 5abfd571389b32d48b1738f437469277, type: 2}
 --- !u!1 &7107327363969688145
 GameObject:
   m_ObjectHideFlags: 0
@@ -985,7 +970,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &6916666576487482463
 Transform:
   m_ObjectHideFlags: 0
