@@ -27,7 +27,6 @@ public class MapManager
 
     public void LoadMap(int mapId)
     {
-        // 老馆 Layer 鸥老 甘
         DestoryMap(mapId);
 
         string mapName = "Map_" + mapId.ToString("000");
@@ -40,7 +39,6 @@ public class MapManager
 
         CurrentGrid = go.GetComponent<Grid>();
 
-        // Coliision 甘 包访 颇老
         TextAsset txt = Managers.Resource.Load<TextAsset>($"Map/{mapName}");
         StringReader reader = new StringReader(txt.text);
 
