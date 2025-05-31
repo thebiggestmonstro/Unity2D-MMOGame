@@ -6,8 +6,8 @@ using static Define;
 public class CreatureController : MonoBehaviour
 {
     public float _speed = 5.0f;
+    public Vector3Int CellPos { get; set; } = Vector3Int.zero;
 
-    protected Vector3Int _cellPos = Vector3Int.zero;
     protected Animator _animator;
     protected SpriteRenderer _spriteRenderer;
 
@@ -110,7 +110,7 @@ public class CreatureController : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        Vector3 _pos = Managers.Map.CurrentGrid.CellToWorld(_cellPos) + new Vector3(0.5f, 0.5f);
+        Vector3 _pos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
         transform.position = _pos;
     }
 
@@ -131,14 +131,13 @@ public class CreatureController : MonoBehaviour
         if (State != CreatureState.Moving)
             return;
 
-        Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(_cellPos) + new Vector3(0.5f, 0.5f);
+        Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
         Vector3 moveDir = destPos - transform.position;
 
         float dist = moveDir.magnitude;
         if (dist < _speed * Time.deltaTime)
         {
             transform.position = destPos;
-            // 예외적으로 애니메이션을 직접 컨트롤
             _state = CreatureState.Idle;
             if (_dir == MoveDir.None)
                 UpdateAnimation();
@@ -154,7 +153,7 @@ public class CreatureController : MonoBehaviour
     {
         if (State == CreatureState.Idle && _dir != MoveDir.None)
         {
-            Vector3Int destPos = _cellPos;
+            Vector3Int destPos = CellPos;
 
             switch (_dir)
             {
@@ -172,10 +171,13 @@ public class CreatureController : MonoBehaviour
                     break;
             }
 
+            State = CreatureState.Moving;
             if (Managers.Map.CanGo(destPos))
             {
-                _cellPos = destPos;
-                State = CreatureState.Moving;
+                if (Managers.Object.Find(destPos) == null)
+                {
+                    CellPos = destPos;
+                }  
             }
         }
     }
