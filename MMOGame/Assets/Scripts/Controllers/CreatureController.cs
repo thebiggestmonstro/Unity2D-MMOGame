@@ -11,7 +11,7 @@ public class CreatureController : MonoBehaviour
     protected Animator _animator;
     protected SpriteRenderer _spriteRenderer;
 
-    CreatureState _state = CreatureState.Idle;
+    protected CreatureState _state = CreatureState.Idle;
     public CreatureState State
     {
         get { return _state; }
@@ -25,8 +25,8 @@ public class CreatureController : MonoBehaviour
         }
     }
 
-    MoveDir _lastDir = MoveDir.Down;
-    MoveDir _dir = MoveDir.Down;
+    protected MoveDir _lastDir = MoveDir.Down;
+    protected MoveDir _dir = MoveDir.Down;
     public MoveDir Dir
     {
         get { return _dir; }
@@ -42,6 +42,29 @@ public class CreatureController : MonoBehaviour
 
             UpdateAnimation();
         }
+    }
+
+    public Vector3Int GetFrontCellPos()
+    {
+        Vector3Int cellPos = CellPos;
+
+        switch (_lastDir)
+        {
+            case MoveDir.Up:
+                cellPos += Vector3Int.up;
+                break;
+            case MoveDir.Down:
+                cellPos += Vector3Int.down;
+                break;
+            case MoveDir.Left:
+                cellPos += Vector3Int.left;
+                break;
+            case MoveDir.Right:
+                cellPos += Vector3Int.right;
+                break;
+        }
+
+        return cellPos;
     }
 
     protected virtual void UpdateAnimation()
@@ -93,7 +116,25 @@ public class CreatureController : MonoBehaviour
         }
         else if (_state == CreatureState.Skill)
         {
-
+            switch (_lastDir)
+            {
+                case MoveDir.Up:
+                    _animator.Play("Player_AttackBack");
+                    _spriteRenderer.flipX = false;
+                    break;
+                case MoveDir.Down:
+                    _animator.Play("Player_AttackFront");
+                    _spriteRenderer.flipX = false;
+                    break;
+                case MoveDir.Left:
+                    _animator.Play("Player_AttackSide");
+                    _spriteRenderer.flipX = true;
+                    break;
+                case MoveDir.Right:
+                    _animator.Play("Player_AttackSide");
+                    _spriteRenderer.flipX = false;
+                    break;
+            }
         }
         else
         { 
@@ -121,16 +162,23 @@ public class CreatureController : MonoBehaviour
 
     protected virtual void UpdateController()
     {
-        UpdatePosition();
-
-        UpdateIsMoving();
+        switch (State)
+        {
+            case CreatureState.Idle:
+                UpdateIdle();
+                break;
+            case CreatureState.Moving:
+                UpdateMoving();
+                break;
+            case CreatureState.Skill:
+                break;
+            case CreatureState.Dead:
+                break;
+        }
     }
 
-    void UpdatePosition()
+    protected virtual void UpdateMoving()
     {
-        if (State != CreatureState.Moving)
-            return;
-
         Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
         Vector3 moveDir = destPos - transform.position;
 
@@ -149,9 +197,9 @@ public class CreatureController : MonoBehaviour
         }
     }
 
-    void UpdateIsMoving()
+    protected virtual void UpdateIdle()
     {
-        if (State == CreatureState.Idle && _dir != MoveDir.None)
+        if (_dir != MoveDir.None)
         {
             Vector3Int destPos = CellPos;
 
@@ -180,5 +228,15 @@ public class CreatureController : MonoBehaviour
                 }  
             }
         }
+    }
+
+    protected virtual void UpdateSkill() 
+    { 
+    
+    }
+
+    protected virtual void UpdateDead()
+    { 
+    
     }
 }
