@@ -5,6 +5,27 @@ using static Define;
 
 public class MonsterController : CreatureController
 {
+    Coroutine _coPatrol;
+    Vector3Int _destCellPos;
+
+    public override CreatureState State 
+    {
+        get { return _state; }
+        set
+        {
+            if (_state == value)
+                return;
+
+            base.State = value;
+
+            if (_coPatrol != null)
+            {
+                StopCoroutine("CoPatrol");
+                _coPatrol = null;
+            }
+        }
+    }
+
     protected override void Init()
     {
         base.Init();
@@ -13,34 +34,13 @@ public class MonsterController : CreatureController
         Dir = MoveDir.None;
     }
 
-    protected override void UpdateController()
+    protected override void UpdateIdle()
     {
-        // GetDirInput();
+        base.UpdateIdle();
 
-        base.UpdateController();
-    }
-
-    void GetDirInput()
-    {
-        if (Input.GetKey(KeyCode.W))
+        if (_coPatrol == null)
         {
-            Dir = MoveDir.Up;
-        }
-        else if (Input.GetKey(KeyCode.S))
-        {
-            Dir = MoveDir.Down;
-        }
-        else if (Input.GetKey(KeyCode.A))
-        {
-            Dir = MoveDir.Left;
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            Dir = MoveDir.Right;
-        }
-        else
-        {
-            Dir = MoveDir.None;
+            _coPatrol = StartCoroutine("CoPatrol");
         }
     }
 
@@ -53,5 +53,69 @@ public class MonsterController : CreatureController
 
         Managers.Object.Remove(gameObject);
         Managers.Resource.Destroy(gameObject);
+    }
+
+    IEnumerator CoPatrol()
+    {
+        int waitSeconds = Random.Range(1, 4);
+        yield return new WaitForSeconds(waitSeconds);
+
+        for (int i = 0; i < 10; i++)
+        {
+            int xRange = Random.Range(-5, 6);
+            int yRange = Random.Range(-5, 6);
+            Vector3Int randomPos = CellPos + new Vector3Int(xRange, yRange);
+
+            if (Managers.Map.CanGo(randomPos) && Managers.Object.Find(randomPos) == null)
+            {
+                _destCellPos = randomPos;
+                State = CreatureState.Moving;
+                yield break;
+            }
+        }
+
+        State = CreatureState.Idle;
+    }
+
+    protected override void MoveToNextPos()
+    {
+        Vector3Int moveCellDir = _destCellPos - CellPos;
+        if (moveCellDir.x > 0)
+            Dir = MoveDir.Right;
+        else if (moveCellDir.x < 0)
+            Dir = MoveDir.Left;
+        else if (moveCellDir.y > 0)
+            Dir = MoveDir.Up;
+        else if (moveCellDir.y < 0)
+            Dir = MoveDir.Down;
+        else
+            Dir = MoveDir.None;
+
+        Vector3Int destPos = CellPos;
+
+        switch (_dir)
+        {
+            case MoveDir.Up:
+                destPos += Vector3Int.up;
+                break;
+            case MoveDir.Down:
+                destPos += Vector3Int.down;
+                break;
+            case MoveDir.Left:
+                destPos += Vector3Int.left;
+                break;
+            case MoveDir.Right:
+                destPos += Vector3Int.right;
+                break;
+        }
+
+        if (Managers.Map.CanGo(destPos) && Managers.Object.Find(destPos) == null)
+        {
+            CellPos = destPos;
+        }
+        else
+        {
+            State = CreatureState.Idle;
+        }
     }
 }

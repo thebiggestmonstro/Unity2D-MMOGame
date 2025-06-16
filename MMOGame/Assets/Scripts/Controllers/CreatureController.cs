@@ -12,7 +12,7 @@ public class CreatureController : MonoBehaviour
     protected SpriteRenderer _spriteRenderer;
 
     protected CreatureState _state = CreatureState.Idle;
-    public CreatureState State
+    public virtual CreatureState State
     {
         get { return _state; }
         set
@@ -177,6 +177,11 @@ public class CreatureController : MonoBehaviour
         }
     }
 
+    protected virtual void UpdateIdle()
+    {
+
+    }
+
     protected virtual void UpdateMoving()
     {
         Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
@@ -186,9 +191,7 @@ public class CreatureController : MonoBehaviour
         if (dist < _speed * Time.deltaTime)
         {
             transform.position = destPos;
-            _state = CreatureState.Idle;
-            if (_dir == MoveDir.None)
-                UpdateAnimation();
+            MoveToNextPos();
         }
         else
         {
@@ -197,35 +200,37 @@ public class CreatureController : MonoBehaviour
         }
     }
 
-    protected virtual void UpdateIdle()
+    protected virtual void MoveToNextPos()
     {
-        if (_dir != MoveDir.None)
+        if (_dir == MoveDir.None)
         {
-            Vector3Int destPos = CellPos;
+            State = CreatureState.Idle;
+            return;
+        }
 
-            switch (_dir)
-            {
-                case MoveDir.Up:
-                    destPos += Vector3Int.up;
-                    break;
-                case MoveDir.Down:
-                    destPos += Vector3Int.down;
-                    break;
-                case MoveDir.Left:
-                    destPos += Vector3Int.left;
-                    break;
-                case MoveDir.Right:
-                    destPos += Vector3Int.right;
-                    break;
-            }
+        Vector3Int destPos = CellPos;
 
-            State = CreatureState.Moving;
-            if (Managers.Map.CanGo(destPos))
+        switch (_dir)
+        {
+            case MoveDir.Up:
+                destPos += Vector3Int.up;
+                break;
+            case MoveDir.Down:
+                destPos += Vector3Int.down;
+                break;
+            case MoveDir.Left:
+                destPos += Vector3Int.left;
+                break;
+            case MoveDir.Right:
+                destPos += Vector3Int.right;
+                break;
+        }
+
+        if (Managers.Map.CanGo(destPos))
+        {
+            if (Managers.Object.Find(destPos) == null)
             {
-                if (Managers.Object.Find(destPos) == null)
-                {
-                    CellPos = destPos;
-                }  
+                CellPos = destPos;
             }
         }
     }
