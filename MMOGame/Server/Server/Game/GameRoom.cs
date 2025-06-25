@@ -22,13 +22,12 @@ namespace Server.Game
                 _players.Add(newPlayer);
                 newPlayer.Room = this;
 
-                // 입장한 본인에게 정보 전송
+                // 플레이어 입장 + 입장한 플레이어로부터 다른 플레이어들을 Spawn할 것을 요청하는 패킷 전송
                 {
                     S_EnterGame enterPacket = new S_EnterGame();
                     enterPacket.Player = newPlayer.Info;
                     newPlayer.Session.Send(enterPacket);
 
-                    // 입장한 나의 Spawn 여부를 다른 플레이어들에게 전송
                     S_Spawn spawnPacket = new S_Spawn();
                     foreach (Player p in _players)
                     {
@@ -38,7 +37,7 @@ namespace Server.Game
                     newPlayer.Session.Send(spawnPacket);
                 }
 
-                // 인접한 타인에게 정보 전송
+                // 다른 플레이어들로부터 입장한 플레이어를 Spawn할 것을 요청하는 패킷 전송
                 {
                     S_Spawn spawnPacket = new S_Spawn();
                     spawnPacket.Players.Add(newPlayer.Info);
@@ -62,13 +61,13 @@ namespace Server.Game
                 _players.Remove(player);
                 player.Room = null;
 
-                // 퇴장한 본인에게 정보 전송
+                // 플레이어 퇴장
                 {
                     S_LeaveGame leavePacket = new S_LeaveGame();
                     player.Session.Send(leavePacket);
                 }
 
-                // 퇴장한 본인의 정보를 타인에게 전송
+                // 다른 플레이어들로부터 퇴장한 플레이어의 Spawn을 해제할 것을 요청하는 패킷 전송
                 {
                     S_Despawn despawnPacket = new S_Despawn();
                     despawnPacket.PlayerIds.Add(player.Info.PlayerId);

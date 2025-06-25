@@ -35,7 +35,6 @@ namespace Server
 		{
 			Console.WriteLine($"OnConnected : {endPoint}");
 
-			// PROTO Test
 			MyPlayer = PlayerManager.Instance.Add();
 			{
 				MyPlayer.Info.Name = $"Player_{MyPlayer.Info.PlayerId}";
