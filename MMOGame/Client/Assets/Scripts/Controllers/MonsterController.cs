@@ -81,7 +81,7 @@ public class MonsterController : CreatureController
         deathEffect.GetComponent<Animator>().Play("START");
         GameObject.Destroy(deathEffect, 0.5f);
 
-        Managers.Object.Remove(gameObject);
+        Managers.Object.Remove(Id);
         Managers.Resource.Destroy(gameObject);
     }
 
