@@ -1,5 +1,5 @@
 using UnityEngine;
-using static Define;
+using Google.Protobuf.Protocol;
 
 public class MyPlayerController : PlayerController
 {
@@ -67,6 +67,21 @@ public class MyPlayerController : PlayerController
             State = CreatureState.Skill;
             //_coSkill = StartCoroutine("CoStartPunch");
             _coSkill = StartCoroutine("CoStartShootArrow");
+        }
+    }
+
+    protected override void MoveToNextPos()
+    {
+        CreatureState prevState = State;
+        Vector3Int prevCellPos = CellPos;
+
+        base.MoveToNextPos();
+
+        if (prevState != State || prevCellPos != CellPos)
+        {
+            C_Move movePacket = new C_Move();
+            movePacket.PosInfo = PosInfo;
+            Managers.Network.Send(movePacket);
         }
     }
 }

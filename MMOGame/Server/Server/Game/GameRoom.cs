@@ -23,7 +23,7 @@ namespace Server.Game
                 _players.Add(newPlayer);
                 newPlayer.Room = this;
 
-                // 플레이어 입장 + 입장한 플레이어로부터 다른 플레이어들을 Spawn할 것을 요청하는 패킷 전송
+                // 플레이어 입장 처리 + 입장한 플레이어에게 다른 플레이어들 Spawn
                 {
                     S_EnterGame enterPacket = new S_EnterGame();
                     enterPacket.Player = newPlayer.Info;
@@ -38,7 +38,7 @@ namespace Server.Game
                     newPlayer.Session.Send(spawnPacket);
                 }
 
-                // 다른 플레이어들로부터 입장한 플레이어를 Spawn할 것을 요청하는 패킷 전송
+                // 다른 플레이어들에게 입장한 플레이어를 Spawn
                 {
                     S_Spawn spawnPacket = new S_Spawn();
                     spawnPacket.Players.Add(newPlayer.Info);
@@ -68,7 +68,7 @@ namespace Server.Game
                     player.Session.Send(leavePacket);
                 }
 
-                // 다른 플레이어들로부터 퇴장한 플레이어의 Spawn을 해제할 것을 요청하는 패킷 전송
+                // 다른 플레이어들로부터 퇴장한 플레이어의 Spawn의 해제를 처리
                 {
                     S_Despawn despawnPacket = new S_Despawn();
                     despawnPacket.PlayerIds.Add(player.Info.PlayerId);
