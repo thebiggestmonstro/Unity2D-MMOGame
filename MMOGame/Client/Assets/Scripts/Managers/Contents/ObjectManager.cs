@@ -8,11 +8,6 @@ public class ObjectManager
 {   
     public MyPlayerController MyPlayer { get; set; }
     Dictionary<int, GameObject> _objects = new Dictionary<int, GameObject>();
-
-    public void Add(int id, GameObject go)
-    { 
-        _objects.Add(id, go);
-    }
     
     public void Add(PlayerInfo info, bool myPlayer = false)
     {
@@ -39,8 +34,13 @@ public class ObjectManager
     }
 
     public void Remove(int id) 
-    { 
+    {
+        GameObject go = FindById(id);
+        if (go == null)
+            return;
+
         _objects.Remove(id);
+        Managers.Resource.Destroy(go);
     }
     
     public void RemoveMyPlayer() 
@@ -53,7 +53,11 @@ public class ObjectManager
     }
 
     public void Clear()
-    { 
+    {
+        foreach (GameObject obj in _objects.Values) 
+        {
+            Managers.Resource.Destroy(obj);
+        }
         _objects.Clear();
     }
 
