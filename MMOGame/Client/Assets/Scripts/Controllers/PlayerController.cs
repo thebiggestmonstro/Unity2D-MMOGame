@@ -102,18 +102,27 @@ public class PlayerController : CreatureController
         }
     }
 
+    public void UseSkill(int skillId)
+    {
+        if (skillId == 1)
+        {
+            _coSkill = StartCoroutine("CoStartPunch");
+        }
+    }
+
     IEnumerator CoStartPunch()
     {
-        GameObject go = Managers.Object.Find(GetFrontCellPos());
-        if (go != null)
-        {
-            Debug.Log(go.name);
-        }
-
         _rangeSkill = false;
+        State = CreatureState.Skill;
         yield return new WaitForSeconds(0.5f);
         State = CreatureState.Idle;
         _coSkill = null;
+        CheckUpdatedFlag();
+    }
+
+    protected virtual void CheckUpdatedFlag()
+    { 
+    
     }
 
     IEnumerator CoStartShootArrow()
