@@ -131,6 +131,14 @@ namespace Server.Game
                 skill.PlayerId = info.PlayerId;
                 skill.Info.SkillId = 1;
                 Broadcast(skill);
+
+                // 피격 판정
+                Vector2Int skillPos = player.GetFrontCellPos(info.PosInfo.MoveDir);
+                Player target = _map.Find(skillPos);
+                if (target != null)
+                {
+                    Console.WriteLine("Hit Player !");
+                }
             }
         }
 

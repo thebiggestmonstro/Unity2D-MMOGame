@@ -3,6 +3,7 @@ using ServerCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Text;
 
 namespace Server.Game
@@ -72,15 +73,42 @@ namespace Server.Game
             return !_collision[y, x] && (!checkObjectsOnly || _players[y, x] == null);
         }
 
+        public Player Find(Vector2Int cellPos)
+        {
+            if (cellPos.x < MinX || cellPos.x > MaxX)
+                return null;
+            if (cellPos.y < MinY || cellPos.y > MaxY)
+                return null;
+
+            int x = cellPos.x - MinX;
+            int y = MaxY - cellPos.y;
+            return _players[y, x];
+        }
+
         public bool ApplyMove(Player player, Vector2Int dest)
         {
             PositionInfo posInfo = player.Info.PosInfo;
-
+            if (posInfo.PosX < MinX || posInfo.PosX > MaxX)
+                return false;
+            if (posInfo.PosY < MinY || posInfo.PosY > MaxY)
+                return false;
             if (CanGo(dest, true) == false)
                 return false;
 
-            // TODO : 실제 이동
+            {
+                int x = posInfo.PosX - MinX;
+                int y = MaxY - posInfo.PosY;
+                if (_players[y, x] == player)
+                    _players[y, x] = null;
+            }
+            {
+                int x = dest.x - MinX;
+                int y = MaxY - dest.y;
+                _players[y, x] = player;
+            }
 
+            posInfo.PosX = dest.x;
+            posInfo.PosY = dest.y;
             return true;
         }
 
