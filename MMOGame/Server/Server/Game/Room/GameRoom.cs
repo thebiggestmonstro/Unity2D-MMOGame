@@ -1,10 +1,11 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using Server.Game.Object;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Server.Game
+namespace Server.Game.Room
 {
     public class GameRoom
     {
@@ -25,9 +26,9 @@ namespace Server.Game
             if (newPlayer == null)
                 return;
 
-            lock (_lock) 
+            lock (_lock)
             {
-                _players.Add(newPlayer.Info.PlayerId, newPlayer);
+                _players.Add(newPlayer.Info.ObjectId, newPlayer);
                 newPlayer.Room = this;
 
                 // 플레이어 입장 처리 + 입장한 플레이어에게 다른 플레이어들 Spawn
@@ -40,7 +41,7 @@ namespace Server.Game
                     foreach (Player p in _players.Values)
                     {
                         if (newPlayer != p)
-                            spawnPacket.Players.Add(p.Info);
+                            spawnPacket.Objects.Add(p.Info);
                     }
                     newPlayer.Session.Send(spawnPacket);
                 }
@@ -48,13 +49,13 @@ namespace Server.Game
                 // 다른 플레이어들에게 입장한 플레이어를 Spawn
                 {
                     S_Spawn spawnPacket = new S_Spawn();
-                    spawnPacket.Players.Add(newPlayer.Info);
+                    spawnPacket.Objects.Add(newPlayer.Info);
                     foreach (Player p in _players.Values)
                     {
                         if (newPlayer != p)
                             p.Session.Send(spawnPacket);
                     }
-                }                
+                }
             }
         }
 
@@ -77,10 +78,10 @@ namespace Server.Game
                 // 다른 플레이어들로부터 퇴장한 플레이어의 Spawn의 해제를 처리
                 {
                     S_Despawn despawnPacket = new S_Despawn();
-                    despawnPacket.PlayerIds.Add(player.Info.PlayerId);
+                    despawnPacket.PlayerIds.Add(player.Info.ObjectId);
                     foreach (Player p in _players.Values)
-                    { 
-                        if(player != p)
+                    {
+                        if (player != p)
                             p.Session.Send(despawnPacket);
                     }
                 }
@@ -92,7 +93,7 @@ namespace Server.Game
             lock (_lock)
             {
                 PositionInfo movePosInfo = movePacket.PosInfo;
-                PlayerInfo info = player.Info;
+                ObjectInfo info = player.Info;
 
                 if (movePosInfo.PosX != info.PosInfo.PosX || movePosInfo.PosY != info.PosInfo.PosY)
                 {
@@ -105,13 +106,13 @@ namespace Server.Game
                 _map.ApplyMove(player, new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
 
                 S_Move resMovePacket = new S_Move();
-                resMovePacket.PlayerId = player.Info.PlayerId;
+                resMovePacket.PlayerId = player.Info.ObjectId;
                 resMovePacket.PosInfo = movePacket.PosInfo;
 
                 Broadcast(resMovePacket);
             }
         }
-        
+
         public void HandleSkill(Player player, C_Skill skillPacket)
         {
             if (player == null)
@@ -119,32 +120,39 @@ namespace Server.Game
 
             lock (_lock)
             {
-                PlayerInfo info = player.Info;
+                ObjectInfo info = player.Info;
                 if (info.PosInfo.State != CreatureState.Idle)
                     return;
-
-                // 스킬 사용가능 여부를 판단하는 로직은 아직 X
 
                 info.PosInfo.State = CreatureState.Skill;
 
                 S_Skill skill = new S_Skill() { Info = new SkillInfo() };
-                skill.PlayerId = info.PlayerId;
-                skill.Info.SkillId = 1;
+                skill.PlayerId = info.ObjectId;
+                skill.Info.SkillId = skillPacket.Info.SkillId;
                 Broadcast(skill);
 
-                // 피격 판정
-                Vector2Int skillPos = player.GetFrontCellPos(info.PosInfo.MoveDir);
-                Player target = _map.Find(skillPos);
-                if (target != null)
+                // 일반 공격
+                if (skillPacket.Info.SkillId == 1)
                 {
-                    Console.WriteLine("Hit Player !");
+                    // 피격 판정
+                    Vector2Int skillPos = player.GetFrontCellPos(info.PosInfo.MoveDir);
+                    Player target = _map.Find(skillPos);
+                    if (target != null)
+                    {
+                        Console.WriteLine("Hit Player !");
+                    }
+                }
+                // 원거리 공격
+                else if (skillPacket.Info.SkillId == 2)
+                {
+
                 }
             }
         }
 
         public void Broadcast(IMessage packet)
         {
-            lock (_lock) 
+            lock (_lock)
             {
                 foreach (Player p in _players.Values)
                 {

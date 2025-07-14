@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 using ServerCore;
 using System.Net;
 using Google.Protobuf.Protocol;
 using Google.Protobuf;
-using Server.Game;
+using Server.Game.Room;
+using Server.Game.Object;
 
 namespace Server
 {
-	public class ClientSession : PacketSession
+    public class ClientSession : PacketSession
 	{
 		public int SessionId { get; set; }
 		public Player MyPlayer { get; set; }
@@ -35,9 +31,9 @@ namespace Server
 		{
 			Console.WriteLine($"OnConnected : {endPoint}");
 
-			MyPlayer = PlayerManager.Instance.Add();
+			MyPlayer = ObjectManager.Instance.Add<Player>();
 			{
-				MyPlayer.Info.Name = $"Player_{MyPlayer.Info.PlayerId}";
+				MyPlayer.Info.Name = $"Player_{MyPlayer.Info.ObjectId}";
 				MyPlayer.Info.PosInfo.State = CreatureState.Idle;
 				MyPlayer.Info.PosInfo.MoveDir = MoveDir.Down;
 				MyPlayer.Info.PosInfo.PosX = 0;
@@ -55,7 +51,7 @@ namespace Server
 
 		public override void OnDisconnected(EndPoint endPoint)
 		{
-            RoomManager.Instance.Find(1).LeaveGame(MyPlayer.Info.PlayerId);
+            RoomManager.Instance.Find(1).LeaveGame(MyPlayer.Info.ObjectId);
 
             SessionManager.Instance.Remove(this);
 

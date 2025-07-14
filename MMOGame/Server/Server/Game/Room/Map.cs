@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.Protocol;
+using Server.Game.Object;
 using ServerCore;
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.IO;
 using System.Numerics;
 using System.Text;
 
-namespace Server.Game
+namespace Server.Game.Room
 {
     public struct Pos
     {
@@ -152,7 +153,7 @@ namespace Server.Game
             int[,] open = new int[SizeY, SizeX];
             for (int y = 0; y < SizeY; y++)
                 for (int x = 0; x < SizeX; x++)
-                    open[y, x] = Int32.MaxValue;
+                    open[y, x] = int.MaxValue;
 
             Pos[,] parent = new Pos[SizeY, SizeX];
 
