@@ -70,7 +70,7 @@ public class MyPlayerController : PlayerController
         if (_coSkillCooltime == null && Input.GetKey(KeyCode.Space))
         {
             C_Skill skill = new C_Skill() { Info = new SkillInfo() };
-            skill.Info.SkillId = 1;
+            skill.Info.SkillId = 2;
             Managers.Network.Send(skill);
 
             _coSkillCooltime = StartCoroutine("CoInputCooltime", 0.2f);

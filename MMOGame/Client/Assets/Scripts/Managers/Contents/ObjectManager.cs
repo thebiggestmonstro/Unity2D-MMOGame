@@ -8,30 +8,59 @@ public class ObjectManager
 {   
     public MyPlayerController MyPlayer { get; set; }
     Dictionary<int, GameObject> _objects = new Dictionary<int, GameObject>();
-    
-    public void Add(PlayerInfo info, bool myPlayer = false)
+
+    public static GameObjectType GetObjectTypeById(int id)
+    { 
+        int type = (id >> 24) & 0x7F;
+        return (GameObjectType)type;
+    }
+
+    public void Add(ObjectInfo info, bool myPlayer = false)
     {
-        if (myPlayer)
-        {
-            GameObject go = Managers.Resource.Instantiate("Creature/MyPlayer");
-            go.name = info.Name;
-            _objects.Add(info.PlayerId, go);
+        GameObjectType objectType = GetObjectTypeById(info.ObjectId);
 
-            MyPlayer = go.GetComponent<MyPlayerController>();
-            MyPlayer.Id = info.PlayerId;
-            MyPlayer.PosInfo = info.PosInfo;
-            MyPlayer.SyncPos();
+        // 추가하는 오브젝트가 플레이어인 경우
+        if (objectType == GameObjectType.Player)
+        {
+            if (myPlayer)
+            {
+                GameObject go = Managers.Resource.Instantiate("Creature/MyPlayer");
+                go.name = info.Name;
+                _objects.Add(info.ObjectId, go);
+
+                MyPlayer = go.GetComponent<MyPlayerController>();
+                MyPlayer.Id = info.ObjectId;
+                MyPlayer.PosInfo = info.PosInfo;
+                MyPlayer.SyncPos();
+            }
+            else
+            {
+                GameObject go = Managers.Resource.Instantiate("Creature/Player");
+                go.name = info.Name;
+                _objects.Add(info.ObjectId, go);
+
+                PlayerController pc = go.GetComponent<PlayerController>();
+                pc.Id = info.ObjectId;
+                pc.PosInfo = info.PosInfo;
+                pc.SyncPos();
+            }
         }
-        else
+        // 추가하는 오브젝트가 몬스터인 경우
+        else if (objectType == GameObjectType.Monster)
         {
-            GameObject go = Managers.Resource.Instantiate("Creature/Player");
-            go.name = info.Name;
-            _objects.Add(info.PlayerId, go);
 
-            PlayerController pc = go.GetComponent<PlayerController>();
-            pc.Id = info.PlayerId;
-            pc.PosInfo = info.PosInfo;
-            pc.SyncPos();
+        }
+        // 추가하는 오브젝트가 투사체인 경우
+        else if (objectType == GameObjectType.Projectile)
+        {
+            GameObject go = Managers.Resource.Instantiate("Creature/Arrow");
+            go.name = "Arrow";
+            _objects.Add(info.ObjectId, go);
+
+            ArrowController ac = go.GetComponent<ArrowController>();
+            ac.Dir = info.PosInfo.MoveDir;
+            ac.CellPos = new Vector3Int(info.PosInfo.PosX, info.PosInfo.PosY, 0);
+            ac.SyncPos();
         }
     }
 
