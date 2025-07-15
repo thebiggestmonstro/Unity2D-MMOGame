@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using Server.Data;
 using Server.Game.Object;
 using System;
 using System.Collections.Generic;
@@ -192,32 +193,42 @@ namespace Server.Game.Room
                 skill.Info.SkillId = skillPacket.Info.SkillId;
                 Broadcast(skill);
 
-                // 일반 공격
-                if (skillPacket.Info.SkillId == 1)
-                {
-                    // 피격 판정
-                    Vector2Int skillPos = player.GetFrontCellPos(info.PosInfo.MoveDir);
-                    GameObject target = Map.Find(skillPos);
-                    if (target != null)
-                    {
-                        Console.WriteLine("Hit GameObject !");
-                    }
-                }
-                // 원거리 공격
-                else if (skillPacket.Info.SkillId == 2)
-                {
-                    // 화살 생성
-                    Arrow arrow = ObjectManager.Instance.Add<Arrow>();
-                    if (arrow == null)
-                        return;
+                Data.Skill skillData = null;
+                if (DataManager.SkillDict.TryGetValue(skill.Info.SkillId, out skillData) == false)
+                    return;
 
-                    arrow.Owner = player;
-                    arrow.PosInfo.State = CreatureState.Moving;
-                    arrow.PosInfo.MoveDir = player.PosInfo.MoveDir;
-                    arrow.PosInfo.PosX = player.PosInfo.PosX;   
-                    arrow.PosInfo.PosY = player.PosInfo.PosY;
-                    EnterGame(arrow);
+                switch (skillData.skillType)
+                {
+                    // 일반 공격
+                    case SkillType.SkillAuto:
+                        {
+                            // 피격 판정
+                            Vector2Int skillPos = player.GetFrontCellPos(info.PosInfo.MoveDir);
+                            GameObject target = Map.Find(skillPos);
+                            if (target != null)
+                            {
+                                Console.WriteLine("Hit GameObject !");
+                            }
+                        }
+                        break;
+                    // 원거리 공격
+                    case SkillType.SkillProjectile:
+                        {
+                            // 화살 생성
+                            Arrow arrow = ObjectManager.Instance.Add<Arrow>();
+                            if (arrow == null)
+                                return;
 
+                            arrow.Owner = player;
+                            arrow.Data = skillData;
+
+                            arrow.PosInfo.State = CreatureState.Moving;
+                            arrow.PosInfo.MoveDir = player.PosInfo.MoveDir;
+                            arrow.PosInfo.PosX = player.PosInfo.PosX;
+                            arrow.PosInfo.PosY = player.PosInfo.PosY;
+                            EnterGame(arrow);
+                        }
+                        break;
                 }
             }
         }
