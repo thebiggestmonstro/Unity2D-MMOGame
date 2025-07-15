@@ -13,6 +13,13 @@ namespace Server.Game.Object
         public Player()
         {
             ObjectType = GameObjectType.Player;
+            Speed = 10.0f;
+        }
+
+        public override void OnDamaged(GameObject attacker, int damage)
+        {
+            // 실제 스탯에 영향을 주는 로직은 아직 X
+            Console.WriteLine($"{this.Info.Name} got {damage} damaged !");
         }
     }
 }

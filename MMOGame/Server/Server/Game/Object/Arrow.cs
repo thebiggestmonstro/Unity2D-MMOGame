@@ -42,8 +42,8 @@ namespace Server.Game.Object
             {
                 GameObject target = Room.Map.Find(destPos);
                 if (target != null)
-                { 
-                    // 피격 판정 로직은 아직 X
+                {
+                    target.OnDamaged(this, Data.damage);
                 }
 
                 // 화살이 피격된 후 소멸

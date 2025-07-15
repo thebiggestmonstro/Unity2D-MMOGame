@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Server.Game
+namespace Server.Game.Object
 {
     public class GameObject
     {
@@ -17,18 +17,23 @@ namespace Server.Game
         public GameRoom Room { get; set; }
         public ObjectInfo Info { get; set; } = new ObjectInfo();
         public PositionInfo PosInfo { get; private set; } = new PositionInfo();
+        public StatInfo StatInfo { get; private set; } = new StatInfo();
+
+        public float Speed
+        {
+            get { return StatInfo.Speed; }
+            set { StatInfo.Speed = value; }
+        }
 
         public GameObject()
         {
             Info.PosInfo = PosInfo;
+            Info.StatInfo = StatInfo;
         }
 
         public Vector2Int CellPos
         {
-            get
-            {
-                return new Vector2Int(PosInfo.PosX, PosInfo.PosY);
-            }
+            get { return new Vector2Int(PosInfo.PosX, PosInfo.PosY); }
 
             set
             {
@@ -36,6 +41,7 @@ namespace Server.Game
                 PosInfo.PosY = value.y;
             }
         }
+
 
         public Vector2Int GetFrontCellPos()
         {
@@ -63,6 +69,11 @@ namespace Server.Game
             }
 
             return cellPos;
+        }
+
+        public virtual void OnDamaged(GameObject attacker, int damage)
+        {
+
         }
     }
 }
