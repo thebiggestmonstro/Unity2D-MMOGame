@@ -88,8 +88,24 @@ namespace Server.Game.Object
         }
 
         public virtual void OnDead(GameObject attacker)
-        { 
-        
+        {
+            // 죽음 패킷을 모두에게 브로드캐스트, 이후 GameRoom 퇴장
+            S_Die diePacket = new S_Die();
+            diePacket.ObjectId = Id;
+            diePacket.AttackerId = attacker.Id;
+            Room.Broadcast(diePacket);
+
+            GameRoom room = Room;
+            room.LeaveGame(Id);
+
+            // GameRoom에 입장하여 맵의 원점에서 부활
+            Stat.Hp = Stat.MaxHp;
+            PosInfo.State = CreatureState.Idle;
+            PosInfo.MoveDir = MoveDir.Down;
+            PosInfo.PosX = 0;
+            PosInfo.PosY = 0;
+
+            room.EnterGame(this);
         }
     }
 }

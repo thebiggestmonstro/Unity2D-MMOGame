@@ -5,21 +5,26 @@ using UnityEngine;
 
 public class MonsterController : CreatureController
 {
+    Coroutine _coSkill;
     Coroutine _coPatrol;
+    Coroutine _coSearch;
+
+    [SerializeField]
     Vector3Int _destCellPos;
 
-    Coroutine _coSearch;
-    GameObject _target;
     [SerializeField]
-    float _searchRange = 5.0f;
+    GameObject _target;
+
+    [SerializeField]
+    float _searchRange = 10.0f;
 
     [SerializeField]
     float _skillRange = 1.0f;
+
     [SerializeField]
     bool _rangedSkill = false;
-    Coroutine _coSkill;
 
-    public override CreatureState State 
+    public override CreatureState State
     {
         get { return PosInfo.State; }
         set
@@ -56,8 +61,6 @@ public class MonsterController : CreatureController
             _skillRange = 10.0f;
         else
             _skillRange = 1.0f;
-
-        AddHpBar();
     }
 
     protected override void UpdateIdle()
@@ -73,17 +76,6 @@ public class MonsterController : CreatureController
         {
             _coSearch = StartCoroutine("CoSearch");
         }
-    }
-
-    public override void OnDamaged()
-    {
-        GameObject deathEffect = Managers.Resource.Instantiate("Effect/DeathEffect");
-        deathEffect.transform.position = transform.position;
-        deathEffect.GetComponent<Animator>().Play("START");
-        GameObject.Destroy(deathEffect, 0.5f);
-
-        Managers.Object.Remove(Id);
-        Managers.Resource.Destroy(gameObject);
     }
 
     protected override void MoveToNextPos()
@@ -121,7 +113,7 @@ public class MonsterController : CreatureController
 
         Dir = GetDirFromVector(moveCellDir);
 
-        if (Managers.Map.CanGo(nextPos) && Managers.Object.Find(nextPos) == null)
+        if (Managers.Map.CanGo(nextPos) && Managers.Object.FindCreature(nextPos) == null)
         {
             CellPos = nextPos;
         }
@@ -129,6 +121,12 @@ public class MonsterController : CreatureController
         {
             State = CreatureState.Idle;
         }
+    }
+
+    public override void OnDamaged()
+    {
+        Managers.Object.Remove(Id);
+        Managers.Resource.Destroy(gameObject);
     }
 
     IEnumerator CoPatrol()
@@ -140,11 +138,11 @@ public class MonsterController : CreatureController
         {
             int xRange = Random.Range(-5, 6);
             int yRange = Random.Range(-5, 6);
-            Vector3Int randomPos = CellPos + new Vector3Int(xRange, yRange);
+            Vector3Int randPos = CellPos + new Vector3Int(xRange, yRange, 0);
 
-            if (Managers.Map.CanGo(randomPos) && Managers.Object.Find(randomPos) == null)
+            if (Managers.Map.CanGo(randPos) && Managers.Object.FindCreature(randPos) == null)
             {
-                _destCellPos = randomPos;
+                _destCellPos = randPos;
                 State = CreatureState.Moving;
                 yield break;
             }
@@ -179,14 +177,18 @@ public class MonsterController : CreatureController
 
     IEnumerator CoStartPunch()
     {
-        GameObject go = Managers.Object.Find(GetFrontCellPos());
+        // 피격 판정
+        GameObject go = Managers.Object.FindCreature(GetFrontCellPos());
         if (go != null)
         {
-            Debug.Log("Punch Attack : " + go.name);
+            CreatureController cc = go.GetComponent<CreatureController>();
+            if (cc != null)
+                cc.OnDamaged();
         }
 
+        // 대기 시간
         yield return new WaitForSeconds(0.5f);
-        State = CreatureState.Idle;
+        State = CreatureState.Moving;
         _coSkill = null;
     }
 
@@ -197,7 +199,8 @@ public class MonsterController : CreatureController
         ac.Dir = Dir;
         ac.CellPos = CellPos;
 
-        yield return new WaitForSeconds(0.5f);
+        // 대기 시간
+        yield return new WaitForSeconds(0.3f);
         State = CreatureState.Moving;
         _coSkill = null;
     }

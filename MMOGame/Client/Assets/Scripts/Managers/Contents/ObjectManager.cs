@@ -75,23 +75,16 @@ public class ObjectManager
         _objects.Remove(id);
         Managers.Resource.Destroy(go);
     }
-    
-    public void RemoveMyPlayer() 
-    {
-        if (MyPlayer == null)
-            return;
-
-        Remove(MyPlayer.Id);
-        MyPlayer = null;
-    }
 
     public void Clear()
     {
-        foreach (GameObject obj in _objects.Values) 
+        foreach (GameObject obj in _objects.Values)
         {
             Managers.Resource.Destroy(obj);
         }
+
         _objects.Clear();
+        MyPlayer = null;
     }
 
     public GameObject FindById(int id)
@@ -101,9 +94,9 @@ public class ObjectManager
         return go;
     }
 
-    public GameObject Find(Vector3Int cellPos)
+    public GameObject FindCreature(Vector3Int cellPos)
     {
-        foreach (GameObject obj in _objects.Values) 
+        foreach (GameObject obj in _objects.Values)
         {
             CreatureController cc = obj.GetComponent<CreatureController>();
             if (cc == null)

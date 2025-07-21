@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Google.Protobuf.Protocol;
 
-public class ArrowController : CreatureController
+public class ArrowController : BaseController
 {
     protected override void Init()
     {

@@ -52,6 +52,8 @@ namespace Server.Game.Room
                     _players.Add(gameObject.Id, player);
                     player.Room = this;
 
+                    Map.ApplyMove(player, new Vector2Int(player.CellPos.x, player.CellPos.y));
+
                     {
                         S_EnterGame enterPacket = new S_EnterGame();
                         enterPacket.Player = player.Info;
@@ -64,6 +66,17 @@ namespace Server.Game.Room
                             if (player != p)
                                 spawnPacket.Objects.Add(p.Info);
                         }
+                        // 입장한 플레이어의 시점에서 몬스터들 스폰
+                        foreach (Monster m in _monsters.Values) 
+                        {
+                            spawnPacket.Objects.Add(m.Info);
+                        }
+                        // 입장한 플레이어의 시점에서 투사체들 스폰
+                        foreach (Projectile p in _projectiles.Values)
+                        {
+                            spawnPacket.Objects.Add(p.Info);
+                        }
+
                         player.Session.Send(spawnPacket);
                     }
                 }
@@ -73,6 +86,8 @@ namespace Server.Game.Room
                     Monster monster = gameObject as Monster;
                     _monsters.Add(gameObject.Id, monster);
                     monster.Room = this;
+
+                    Map.ApplyMove(monster, new Vector2Int(monster.CellPos.x, monster.CellPos.y));
                 }
                 // 투사체의 GameRoom 입장 및 스폰 처리
                 else if (type == GameObjectType.Projectile)
