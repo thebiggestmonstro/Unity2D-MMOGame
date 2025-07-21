@@ -17,18 +17,18 @@ namespace Server.Game.Object
         public GameRoom Room { get; set; }
         public ObjectInfo Info { get; set; } = new ObjectInfo();
         public PositionInfo PosInfo { get; private set; } = new PositionInfo();
-        public StatInfo StatInfo { get; private set; } = new StatInfo();
+        public StatInfo Stat { get; private set; } = new StatInfo();
 
         public float Speed
         {
-            get { return StatInfo.Speed; }
-            set { StatInfo.Speed = value; }
+            get { return Stat.Speed; }
+            set { Stat.Speed = value; }
         }
 
         public GameObject()
         {
             Info.PosInfo = PosInfo;
-            Info.StatInfo = StatInfo;
+            Info.StatInfo = Stat;
         }
 
         public Vector2Int CellPos
@@ -73,7 +73,23 @@ namespace Server.Game.Object
 
         public virtual void OnDamaged(GameObject attacker, int damage)
         {
+            Stat.Hp = Math.Max(Stat.Hp - damage, 0);
 
+            // 피격 정보를 다른 모든 GameObject에게 브로드캐스트
+            S_ChangeHp changePacktet = new S_ChangeHp();
+            changePacktet.ObjectId = Id;
+            changePacktet.Hp = Stat.Hp;
+            Room.Broadcast(changePacktet);
+
+            if (Stat.Hp <= 0)
+            {
+                OnDead(attacker);
+            }
+        }
+
+        public virtual void OnDead(GameObject attacker)
+        { 
+        
         }
     }
 }
