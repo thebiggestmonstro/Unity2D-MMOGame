@@ -80,9 +80,7 @@ class PacketHandler
         CreatureController cc = go.GetComponent <CreatureController>();
         if (cc != null)
         {
-            cc.Stat.Hp = changePacket.Hp;
-            // TODO : UI 갱신 로직은 아직 X
-            Debug.Log($"Hp : {cc.Stat.Hp}");
+            cc.Hp = changePacket.Hp;
         }
     }
 }
