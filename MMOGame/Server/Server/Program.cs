@@ -10,12 +10,12 @@ using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Google.Protobuf.WellKnownTypes;
 using Server.Data;
-using Server.Game.Room;
+using Server.Game;
 using ServerCore;
 
 namespace Server
 {
-    class Program
+	class Program
 	{
 		static Listener _listener = new Listener();
 
@@ -41,8 +41,9 @@ namespace Server
 			Console.WriteLine("Listening...");
 
 			//FlushRoom();
-			JobTimer.Instance.Push(FlushRoom);
+			//JobTimer.Instance.Push(FlushRoom);
 
+			// TODO
 			while (true)
 			{
 				//JobTimer.Instance.Flush();

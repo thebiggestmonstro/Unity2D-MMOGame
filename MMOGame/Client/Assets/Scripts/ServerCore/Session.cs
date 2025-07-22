@@ -158,7 +158,7 @@ namespace ServerCore
 					}
 					catch (Exception e)
 					{
-                        Debug.Log($"OnSendCompleted Failed {e}");
+						Debug.Log($"OnSendCompleted Failed {e}");
 					}
 				}
 				else
@@ -185,7 +185,7 @@ namespace ServerCore
 			}
 			catch (Exception e)
 			{
-                Debug.Log($"RegisterRecv Failed {e}");
+				Debug.Log($"RegisterRecv Failed {e}");
 			}
 		}
 
@@ -221,7 +221,7 @@ namespace ServerCore
 				}
 				catch (Exception e)
 				{
-                    Debug.Log($"OnRecvCompleted Failed {e}");
+					Debug.Log($"OnRecvCompleted Failed {e}");
 				}
 			}
 			else

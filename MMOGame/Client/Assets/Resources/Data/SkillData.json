@@ -1,24 +1,24 @@
 {
-  "skills": [
-    {
-      "id": "1",
-      "name": "ÌèâÌÉÄ",
-      "cooldown": "0.2",
-      "damage": "10",
-      "skillType": "SkillAuto"
-    },
-    {
-      "id": "2",
-      "name": "ÌôîÏÇ¥ Í≥µÍ≤©",
-      "cooldown": "0.2",
-      "damage": "5",
-      "skillType": "SkillProjectile",
-      "projectile": {
-        "name": "ÌôîÏÇ¥",
-        "speed": "20.0",
-        "range": "10",
-        "prefab": "Creature/Arrow"
-      }
-    }
-  ]
+    "skills": [
+        {
+            "id": "1",
+            "name": "∆Ú≈∏",
+            "cooldown": "0.2",
+            "damage": "10",
+            "skillType": "SkillAuto"
+        },
+        {
+            "id": "2",
+            "name": "»≠ªÏ ∞¯∞›",
+            "cooldown": "0.2",
+            "damage": "5",
+            "skillType": "SkillProjectile",
+            "projectile": {
+                "name": "»≠ªÏ",
+                "speed": "20.0",
+                "range": "10",
+                "prefab": "Creature/Arrow"
+            }
+        }
+    ]
 } 

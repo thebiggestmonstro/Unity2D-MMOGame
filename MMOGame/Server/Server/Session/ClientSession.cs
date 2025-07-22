@@ -1,32 +1,34 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 using ServerCore;
 using System.Net;
 using Google.Protobuf.Protocol;
 using Google.Protobuf;
-using Server.Game.Room;
-using Server.Game.Object;
+using Server.Game;
 using Server.Data;
 
 namespace Server
 {
-    public class ClientSession : PacketSession
+	public class ClientSession : PacketSession
 	{
-		public int SessionId { get; set; }
 		public Player MyPlayer { get; set; }
+		public int SessionId { get; set; }
 
 		public void Send(IMessage packet)
 		{
 			string msgName = packet.Descriptor.Name.Replace("_", string.Empty);
 			MsgId msgId = (MsgId)Enum.Parse(typeof(MsgId), msgName);
-
-            ushort size = (ushort)packet.CalculateSize();
-            byte[] sendBuffer = new byte[size + 4];
-            Array.Copy(BitConverter.GetBytes((ushort)(size + 4)), 0, sendBuffer, 0, sizeof(ushort));
-            Array.Copy(BitConverter.GetBytes((ushort)msgId), 0, sendBuffer, 2, sizeof(ushort));
-            Array.Copy(packet.ToByteArray(), 0, sendBuffer, 4, size);
-
+			ushort size = (ushort)packet.CalculateSize();
+			byte[] sendBuffer = new byte[size + 4];
+			Array.Copy(BitConverter.GetBytes((ushort)(size + 4)), 0, sendBuffer, 0, sizeof(ushort));
+			Array.Copy(BitConverter.GetBytes((ushort)msgId), 0, sendBuffer, 2, sizeof(ushort));
+			Array.Copy(packet.ToByteArray(), 0, sendBuffer, 4, size);
 			Send(new ArraySegment<byte>(sendBuffer));
-        }
+		}
 
 		public override void OnConnected(EndPoint endPoint)
 		{
@@ -57,9 +59,9 @@ namespace Server
 
 		public override void OnDisconnected(EndPoint endPoint)
 		{
-            RoomManager.Instance.Find(1).LeaveGame(MyPlayer.Info.ObjectId);
+			RoomManager.Instance.Find(1).LeaveGame(MyPlayer.Info.ObjectId);
 
-            SessionManager.Instance.Remove(this);
+			SessionManager.Instance.Remove(this);
 
 			Console.WriteLine($"OnDisconnected : {endPoint}");
 		}

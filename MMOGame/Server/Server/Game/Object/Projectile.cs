@@ -1,23 +1,22 @@
-﻿using System;
+﻿using Google.Protobuf.Protocol;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Google.Protobuf.Protocol;
 
-namespace Server.Game.Object
+namespace Server.Game
 {
-    public class Projectile : GameObject
-    {
-        // 투사체를 생성한 스킬을 저장
-        public Data.Skill Data { get; set; }
+	public class Projectile : GameObject
+	{
+		public Data.Skill Data { get; set; }
 
-        public Projectile()
-        {
-            ObjectType = GameObjectType.Projectile;
-        }
+		public Projectile()
+		{
+			ObjectType = GameObjectType.Projectile;
+		}
 
-        public virtual void Update()
-        { 
-        
-        }
-    }
+		public virtual void Update()
+		{
+
+		}
+	}
 }
