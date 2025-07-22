@@ -52,22 +52,22 @@ class PacketHandler
 		bc.PosInfo = movePacket.PosInfo;
 	}
 
-	public static void S_SkillHandler(PacketSession session, IMessage packet)
-	{
-		S_Skill skillPacket = packet as S_Skill;
+    public static void S_SkillHandler(PacketSession session, IMessage packet)
+    {
+        S_Skill skillPacket = packet as S_Skill;
 
-		GameObject go = Managers.Object.FindById(skillPacket.ObjectId);
-		if (go == null)
-			return;
+        GameObject go = Managers.Object.FindById(skillPacket.ObjectId);
+        if (go == null)
+            return;
 
-		PlayerController pc = go.GetComponent<PlayerController>();
-		if (pc != null)
-		{
-			pc.UseSkill(skillPacket.Info.SkillId);
-		}
-	}
+        CreatureController cc = go.GetComponent<CreatureController>();
+        if (cc != null)
+        {
+            cc.UseSkill(skillPacket.Info.SkillId);
+        }
+    }
 
-	public static void S_ChangeHpHandler(PacketSession session, IMessage packet)
+    public static void S_ChangeHpHandler(PacketSession session, IMessage packet)
 	{
 		S_ChangeHp changePacket = packet as S_ChangeHp;
 

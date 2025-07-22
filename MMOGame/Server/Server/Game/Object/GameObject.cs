@@ -20,6 +20,12 @@ namespace Server.Game
 		public PositionInfo PosInfo { get; private set; } = new PositionInfo();
 		public StatInfo Stat { get; private set; } = new StatInfo();
 
+		public int Hp
+		{
+			get { return Stat.Hp; }
+			set { Stat.Hp = Math.Clamp(value, 0, Stat.MaxHp); }
+		}
+
 		public float Speed
 		{
 			get { return Stat.Speed; }
