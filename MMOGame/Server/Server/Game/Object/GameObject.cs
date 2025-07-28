@@ -111,6 +111,9 @@ namespace Server.Game
 
 		public virtual void OnDamaged(GameObject attacker, int damage)
 		{
+			if (Room == null)
+				return;
+
 			Stat.Hp = Math.Max(Stat.Hp - damage, 0);
 
 			S_ChangeHp changePacket = new S_ChangeHp();
@@ -126,6 +129,9 @@ namespace Server.Game
 
 		public virtual void OnDead(GameObject attacker)
 		{
+            if (Room == null)
+                return;
+
             // 죽음 패킷을 모두에게 브로드캐스트, 이후 GameRoom 퇴장
             S_Die diePacket = new S_Die();
 			diePacket.ObjectId = Id;
@@ -133,7 +139,7 @@ namespace Server.Game
 			Room.Broadcast(diePacket);
 
 			GameRoom room = Room;
-			room.LeaveGame(Id);
+            room.LeaveGame(Id);
 
             // GameRoom에 입장하여 맵의 원점에서 부활
             Stat.Hp = Stat.MaxHp;
@@ -142,7 +148,7 @@ namespace Server.Game
 			PosInfo.PosX = 0;
 			PosInfo.PosY = 0;
 
-			room.EnterGame(this);
-		}
+            room.EnterGame(this);
+        }
 	}
 }

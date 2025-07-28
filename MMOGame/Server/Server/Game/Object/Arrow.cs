@@ -46,7 +46,7 @@ namespace Server.Game
 				}
 
                 // 화살이 피격된 후 소멸
-                Room.LeaveGame(Id);
+                Room.Push(Room.LeaveGame, Id);
 			}
 		}
 	}
