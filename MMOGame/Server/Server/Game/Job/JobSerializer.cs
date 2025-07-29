@@ -6,9 +6,23 @@ namespace Server.Game.Job
 {
     public class JobSerializer
     {
+        JobTimer _timer = new JobTimer();
         Queue<IJob> _jobQueue = new Queue<IJob>();
         object _lock = new object();
         bool _flush = false;
+
+        // 외부에서 호출하여 패킷 예약
+        public void PushAfter(int tickAfter, Action action) { PushAfter(tickAfter, new Job(action)); }
+        public void PushAfter<T1>(int tickAfter, Action<T1> action, T1 t1) { PushAfter(tickAfter, new Job<T1>(action, t1)); }
+        public void PushAfter<T1, T2>(int tickAfter, Action<T1, T2> action, T1 t1, T2 t2) { PushAfter(tickAfter, new Job<T1, T2>(action, t1, t2)); }
+        public void PushAfter<T1, T2, T3>(int tickAfter, Action<T1, T2, T3> action, T1 t1, T2 t2, T3 t3) { PushAfter(tickAfter, new Job<T1, T2, T3>(action, t1, t2, t3)); }
+
+        // 패킷 예약
+        public void PushAfter(int tickAfter, IJob job)
+        {
+            _timer.Push(job, tickAfter);
+        }
+
 
         // 외부에서 호출하여 패킷을 저장하는 함수
         public void Push(Action action) { Push(new Job(action)); }
@@ -19,18 +33,10 @@ namespace Server.Game.Job
         // 패킷 저장
         public void Push(IJob job)
         {
-            bool flush = false;
-
             lock (_lock)
             {
                 _jobQueue.Enqueue(job);
-                // 만약 들어온 패킷이 큐의 Head에 저장되었다면 바로 처리
-                if (_flush == false)
-                    flush = _flush = true;
             }
-
-            if (flush)
-                Flush();
         }
 
         // 패킷 제거
@@ -48,8 +54,10 @@ namespace Server.Game.Job
         }
 
         // 저장된 패킷 처리
-        void Flush()
+        public void Flush()
         {
+            _timer.Flush();
+
             while (true)
             {
                 IJob job = Pop();

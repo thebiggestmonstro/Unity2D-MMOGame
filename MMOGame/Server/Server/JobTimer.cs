@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Server.Game.Job;
 using ServerCore;
 
 namespace Server
@@ -8,7 +9,7 @@ namespace Server
 	struct JobTimerElem : IComparable<JobTimerElem>
 	{
 		public int execTick; // 실행 시간
-		public Action action;
+		public IJob job;
 
 		public int CompareTo(JobTimerElem other)
 		{
@@ -16,47 +17,45 @@ namespace Server
 		}
 	}
 
-	class JobTimer
+	public class JobTimer
 	{
 		PriorityQueue<JobTimerElem> _pq = new PriorityQueue<JobTimerElem>();
 		object _lock = new object();
 
-		public static JobTimer Instance { get; } = new JobTimer();
+        public void Push(IJob job, int tickAfter = 0)
+        {
+            JobTimerElem jobElement;
+            jobElement.execTick = System.Environment.TickCount + tickAfter;
+            jobElement.job = job;
 
-		public void Push(Action action, int tickAfter = 0)
-		{
-			JobTimerElem job;
-			job.execTick = System.Environment.TickCount + tickAfter;
-			job.action = action;
+            lock (_lock)
+            {
+                _pq.Push(jobElement);
+            }
+        }
 
-			lock (_lock)
-			{
-				_pq.Push(job);
-			}
-		}
+        public void Flush()
+        {
+            while (true)
+            {
+                int now = System.Environment.TickCount;
 
-		public void Flush()
-		{
-			while (true)
-			{
-				int now = System.Environment.TickCount;
+                JobTimerElem jobElement;
 
-				JobTimerElem job;
+                lock (_lock)
+                {
+                    if (_pq.Count == 0)
+                        break;
 
-				lock (_lock)
-				{
-					if (_pq.Count == 0)
-						break;
+                    jobElement = _pq.Peek();
+                    if (jobElement.execTick > now)
+                        break;
 
-					job = _pq.Peek();
-					if (job.execTick > now)
-						break;
+                    _pq.Pop();
+                }
 
-					_pq.Pop();
-				}
-
-				job.action.Invoke();
-			}
-		}
-	}
+                jobElement.job.Execute();
+            }
+        }
+    }
 }

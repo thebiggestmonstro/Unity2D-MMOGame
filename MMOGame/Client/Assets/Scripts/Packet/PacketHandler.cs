@@ -45,6 +45,11 @@ class PacketHandler
 		if (go == null)
 			return;
 
+		// 방향이 일치하지 않는 문제는 서버에서 0.1초 단위로 이동을 처리하기 때문 -> 딜레이가 발생하여 클라이언트의 선이동 결과와 충돌함
+		// 다른 플레이어들의 이동 동기화만 서버에서 처리, 로컬 플레이어는 클라이언트에서 처리
+		if (Managers.Object.MyPlayer.Id == movePacket.ObjectId)
+			return;
+
 		BaseController bc = go.GetComponent<BaseController>();
 		if (bc == null)
 			return;

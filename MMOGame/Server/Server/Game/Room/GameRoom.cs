@@ -51,6 +51,9 @@ namespace Server.Game
 			{
 				projectile.Update();
 			}
+
+			// 저장된 패킷을 처리
+			Flush();
 		}
 
         public void EnterGame(GameObject gameObject)
@@ -152,9 +155,9 @@ namespace Server.Game
 				if (_monsters.Remove(objectId, out monster) == false)
 					return;
 
-				monster.Room = null;
 				Map.ApplyLeave(monster);
-			}
+                monster.Room = null;
+            }
             // 투사체의 GameRoom 퇴장 및 스폰 해제 처리
             else if (type == GameObjectType.Projectile)
 			{
