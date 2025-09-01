@@ -116,6 +116,11 @@ class PacketHandler
 		S_Login loginPacket = (S_Login)packet;
 		Debug.Log($"로그인 성공 : {loginPacket.LoginOk}");
     }
+
+	public static void S_CreatePlayerHandler(PacketSession session, IMessage packet)
+	{ 
+		
+	}
 }
 
 

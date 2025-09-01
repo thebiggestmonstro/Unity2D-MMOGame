@@ -49,33 +49,20 @@ class PacketHandler
 	{
         C_Login loginPacket = packet as C_Login;
         ClientSession clientSession = session as ClientSession;
-
-		Console.WriteLine($"로그인한 플레이어의 고유 ID : {loginPacket.UnigueId}");
-
-		// TODO : 보안 체크
-
-		// 유효한 ID인지 체크
-		using (AppDbContext db = new AppDbContext())
-		{
-			AccountDb findAccount = db.Accounts
-				.Where(a => a.AccountName == loginPacket.UnigueId).FirstOrDefault();
-
-			// 유효하다면, 그대로 클라이언트에 S_Login 패킷 전송
-			if (findAccount != null)
-			{
-				S_Login loginOk = new S_Login() { LoginOk = 1 };
-				clientSession.Send(loginOk);
-			}
-			// 유효하지 않다면, 새롭게 Account 테이블의 데이터를 생성하고 클라이언트에 S_Login 패킷 전송
-			else 
-			{
-				AccountDb newAccount = new AccountDb() { AccountName = loginPacket.UnigueId };
-				db.Accounts.Add(newAccount);
-				db.SaveChanges();
-
-				S_Login loginOk = new S_Login() { LoginOk = 1 };
-				clientSession.Send(loginOk);
-            }
-		}
+		clientSession.HandleLogin(loginPacket);
     }
+
+	public static void C_EnterGameHandler(PacketSession session, IMessage packet)
+	{
+		C_EnterGame enterGamePacket = (C_EnterGame)packet;
+		ClientSession clientSession = (ClientSession)session;
+	}
+
+    public static void C_CreatePlayerHandler(PacketSession session, IMessage packet)
+	{
+		C_CreatePlayer createPlayerPacket = (C_CreatePlayer)packet;
+		ClientSession clientSession = (ClientSession)session;
+	}
+
+
 }
