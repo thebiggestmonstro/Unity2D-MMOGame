@@ -115,11 +115,44 @@ class PacketHandler
 	{
 		S_Login loginPacket = (S_Login)packet;
 		Debug.Log($"로그인 성공 : {loginPacket.LoginOk}");
+
+        // TODO : 로그인이 성공하였으므로 로비의 UI에서 캐릭터들을 보여주고, 선택할 수 있는 기능 제공
+
+        // 로그인했을 때 로비에 플레이어가 없는 경우
+        if (loginPacket.Players == null || loginPacket.Players.Count == 0)
+        {
+            C_CreatePlayer createPacket = new C_CreatePlayer();
+            createPacket.Name = $"Player_{Random.Range(0, 10000).ToString("0000")}";
+            Managers.Network.Send(createPacket);
+        }
+        // 로그인했을 때 로비에 플레이어가 있는 경우
+        else
+		{
+            LobbyPlayerInfo info = loginPacket.Players[0];
+            C_EnterGame enterGamePacket = new C_EnterGame();
+            enterGamePacket.Name = info.Name;
+            Managers.Network.Send(enterGamePacket);
+        }
     }
 
 	public static void S_CreatePlayerHandler(PacketSession session, IMessage packet)
-	{ 
-		
+	{
+		S_CreatePlayer createOkPacket = (S_CreatePlayer)packet;
+
+		// 생성하고자 하는 플레이어가 없는 경우 
+		if (createOkPacket.Player == null)
+		{
+            C_CreatePlayer createPacket = new C_CreatePlayer();
+            createPacket.Name = $"Player_{Random.Range(0, 10000).ToString("0000")}";
+            Managers.Network.Send(createPacket);
+        }
+        // 생성하고자 하는 플레이어가 있는 경우 
+        else
+        {
+            C_EnterGame enterGamePacket = new C_EnterGame();
+            enterGamePacket.Name = createOkPacket.Player.Name;
+            Managers.Network.Send(enterGamePacket);
+        }
 	}
 }
 
