@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.DB;
 using Server.Game;
+using Server.Utils;
 using ServerCore;
 using System;
 using System.Collections.Generic;
@@ -40,9 +41,10 @@ namespace Server
                     {
                         LobbyPlayerInfo lobbyPlayer = new LobbyPlayerInfo()
                         {
+                            PlayerDbId = playerDb.PlayerDbId,
                             Name = playerDb.PlayerName,
                             StatInfo = new StatInfo()
-                            { 
+                            {
                                 Level = playerDb.Level,
                                 Hp = playerDb.Hp,
                                 MaxHp = playerDb.MaxHp,
@@ -68,7 +70,9 @@ namespace Server
                 {
                     AccountDb newAccount = new AccountDb() { AccountName = loginPacket.UnigueId };
                     db.Accounts.Add(newAccount);
-                    db.SaveChanges();
+                    bool success = db.SaveChangesEx();
+                    if (success == false)
+                        return;
 
                     // AccountDbId 메모리에 기억
                     AccountDbId = findAccount.AccountDbId;
@@ -117,11 +121,14 @@ namespace Server
                     };
 
                     db.Players.Add(newPlayerDb);
-                    db.SaveChanges();
+                    bool success = db.SaveChangesEx();
+                    if (success == false)
+                        return;
 
                     // 메모리에 추가
                     LobbyPlayerInfo lobbyPlayer = new LobbyPlayerInfo()
                     {
+                        PlayerDbId = newPlayerDb.PlayerDbId,
                         Name = createPacket.Name,
                         StatInfo = new StatInfo()
                         {
@@ -157,6 +164,7 @@ namespace Server
 
             MyPlayer = ObjectManager.Instance.Add<Player>();
             {
+                MyPlayer.PlayerDbId = playerInfo.PlayerDbId;
                 MyPlayer.Info.Name = playerInfo.Name;
                 MyPlayer.Info.PosInfo.State = CreatureState.Idle;
                 MyPlayer.Info.PosInfo.MoveDir = MoveDir.Down;
