@@ -36,7 +36,7 @@ namespace Google.Protobuf.Protocol {
             "IQoEaW5mbxgCIAEoCzITLlByb3RvY29sLlNraWxsSW5mbyIqCgpTX0NoYW5n",
             "ZUhwEhAKCG9iamVjdElkGAEgASgFEgoKAmhwGAIgASgFIi0KBVNfRGllEhAK",
             "CG9iamVjdElkGAEgASgFEhIKCmF0dGFja2VySWQYAiABKAUiDQoLU19Db25u",
-            "ZWN0ZWQiGwoHQ19Mb2dpbhIQCgh1bmlndWVJZBgBIAEoCSJGCgdTX0xvZ2lu",
+            "ZWN0ZWQiGwoHQ19Mb2dpbhIQCgh1bmlxdWVJZBgBIAEoCSJGCgdTX0xvZ2lu",
             "Eg8KB2xvZ2luT2sYASABKAUSKgoHcGxheWVycxgCIAMoCzIZLlByb3RvY29s",
             "LkxvYmJ5UGxheWVySW5mbyIeCg5DX0NyZWF0ZVBsYXllchIMCgRuYW1lGAEg",
             "ASgJIjsKDlNfQ3JlYXRlUGxheWVyEikKBnBsYXllchgBIAEoCzIZLlByb3Rv",
@@ -80,7 +80,7 @@ namespace Google.Protobuf.Protocol {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_ChangeHp), global::Google.Protobuf.Protocol.S_ChangeHp.Parser, new[]{ "ObjectId", "Hp" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_Die), global::Google.Protobuf.Protocol.S_Die.Parser, new[]{ "ObjectId", "AttackerId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_Connected), global::Google.Protobuf.Protocol.S_Connected.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.C_Login), global::Google.Protobuf.Protocol.C_Login.Parser, new[]{ "UnigueId" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.C_Login), global::Google.Protobuf.Protocol.C_Login.Parser, new[]{ "UniqueId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_Login), global::Google.Protobuf.Protocol.S_Login.Parser, new[]{ "LoginOk", "Players" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.C_CreatePlayer), global::Google.Protobuf.Protocol.C_CreatePlayer.Parser, new[]{ "Name" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_CreatePlayer), global::Google.Protobuf.Protocol.S_CreatePlayer.Parser, new[]{ "Player" }, null, null, null, null),
@@ -1666,7 +1666,7 @@ namespace Google.Protobuf.Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public C_Login(C_Login other) : this() {
-      unigueId_ = other.unigueId_;
+      uniqueId_ = other.uniqueId_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1675,14 +1675,14 @@ namespace Google.Protobuf.Protocol {
       return new C_Login(this);
     }
 
-    /// <summary>Field number for the "unigueId" field.</summary>
-    public const int UnigueIdFieldNumber = 1;
-    private string unigueId_ = "";
+    /// <summary>Field number for the "uniqueId" field.</summary>
+    public const int UniqueIdFieldNumber = 1;
+    private string uniqueId_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string UnigueId {
-      get { return unigueId_; }
+    public string UniqueId {
+      get { return uniqueId_; }
       set {
-        unigueId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        uniqueId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1699,14 +1699,14 @@ namespace Google.Protobuf.Protocol {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (UnigueId != other.UnigueId) return false;
+      if (UniqueId != other.UniqueId) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (UnigueId.Length != 0) hash ^= UnigueId.GetHashCode();
+      if (UniqueId.Length != 0) hash ^= UniqueId.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1720,9 +1720,9 @@ namespace Google.Protobuf.Protocol {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (UnigueId.Length != 0) {
+      if (UniqueId.Length != 0) {
         output.WriteRawTag(10);
-        output.WriteString(UnigueId);
+        output.WriteString(UniqueId);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1732,8 +1732,8 @@ namespace Google.Protobuf.Protocol {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (UnigueId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(UnigueId);
+      if (UniqueId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(UniqueId);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1746,8 +1746,8 @@ namespace Google.Protobuf.Protocol {
       if (other == null) {
         return;
       }
-      if (other.UnigueId.Length != 0) {
-        UnigueId = other.UnigueId;
+      if (other.UniqueId.Length != 0) {
+        UniqueId = other.UniqueId;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1761,7 +1761,7 @@ namespace Google.Protobuf.Protocol {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            UnigueId = input.ReadString();
+            UniqueId = input.ReadString();
             break;
           }
         }

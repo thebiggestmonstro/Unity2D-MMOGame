@@ -103,7 +103,7 @@ message S_Connected {
 }
 
 message C_Login {
-  string unigueId = 1;
+  string uniqueId = 1;
 }
 
 message S_Login {

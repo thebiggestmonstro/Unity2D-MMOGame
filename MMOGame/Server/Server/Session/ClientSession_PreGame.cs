@@ -29,7 +29,7 @@ namespace Server
             {
                 AccountDb findAccount = db.Accounts
                     .Include(a => a.Players)
-                    .Where(a => a.AccountName == loginPacket.UnigueId).FirstOrDefault();
+                    .Where(a => a.AccountName == loginPacket.UniqueId).FirstOrDefault();
 
                 if (findAccount != null)
                 {
@@ -68,14 +68,14 @@ namespace Server
                 }
                 else
                 {
-                    AccountDb newAccount = new AccountDb() { AccountName = loginPacket.UnigueId };
+                    AccountDb newAccount = new AccountDb() { AccountName = loginPacket.UniqueId };
                     db.Accounts.Add(newAccount);
                     bool success = db.SaveChangesEx();
                     if (success == false)
                         return;
 
                     // AccountDbId 메모리에 기억
-                    AccountDbId = findAccount.AccountDbId;
+                    AccountDbId = newAccount.AccountDbId;
 
                     S_Login loginOk = new S_Login() { LoginOk = 1 };
                     Send(loginOk);
@@ -102,6 +102,7 @@ namespace Server
                     Send(new S_CreatePlayer());
                 }
                 // 그렇지 않은 경우
+                else
                 {
                     // 1레벨의 스탯 정보 추출
                     StatInfo stat = null;

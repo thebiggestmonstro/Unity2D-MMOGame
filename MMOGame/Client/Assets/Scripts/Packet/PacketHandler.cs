@@ -107,7 +107,7 @@ class PacketHandler
 	{
 		Debug.Log("S_ConnectedHandler");
 		C_Login loginPacket = new C_Login();
-		loginPacket.UnigueId = SystemInfo.deviceUniqueIdentifier;
+		loginPacket.UniqueId = SystemInfo.deviceUniqueIdentifier;
 		Managers.Network.Send(loginPacket);
 	}
 
