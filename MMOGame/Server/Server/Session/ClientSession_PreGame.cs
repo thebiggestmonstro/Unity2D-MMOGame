@@ -3,13 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.DB;
 using Server.Game;
-using Server.Migrations;
+using Server.Game.Item;
 using Server.Utils;
 using ServerCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Server
 {
@@ -185,9 +183,16 @@ namespace Server
 
                     foreach (ItemDb itemDb in items)
                     {
-                        // 인벤토리에 아이템 저장
-                        ItemInfo info = new ItemInfo();
-                        itemListPacket.Items.Add(info);
+                        Item item = Item.MakeItem(itemDb);
+                        if (item != null)
+                        {
+                            // 인벤토리에 아이템 저장
+                            MyPlayer.Inven.Add(item);
+
+                            ItemInfo info = new ItemInfo();
+                            info.MergeFrom(item.Info);
+                            itemListPacket.Items.Add(info);
+                        }
                     }
                 }
 

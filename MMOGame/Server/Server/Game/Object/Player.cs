@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.Protocol;
 using Server.DB;
+using Server.Game.Item;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,6 +11,9 @@ namespace Server.Game
 	{
 		public int PlayerDbId { get; set; }
 		public ClientSession Session { get; set; }
+
+		// Inventory는 GameRoom에서 건들게 되므로 따로 lock을 설정하지는 않음
+		public Inventory Inven { get; private set; } = new Inventory();
 
 		public Player()
 		{
@@ -26,15 +30,10 @@ namespace Server.Game
 			base.OnDead(attacker);
 		}
 
-        // 플레이어가 퇴장하는 시점에서 플레이어의 변경사항을 DB에 저장 
         public void OnLeaveGame()
 		{
 			//DbTransaction.SavePlayerStatus_AllInOne(this, Room);
 			DbTransaction.SavePlayerStatus_Step1(this, Room);
         }
-
-		// Player 코드의 남은 문제
-		// 1) 서버가 다운되면 저장되지 않은 정보는 날아감
-		// 2) 플레이어가 퇴장하자마자 DB에 저장하므로 단계적인 처리가 이뤄지지 않음
 	}
 }
