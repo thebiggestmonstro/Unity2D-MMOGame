@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.DB;
 using Server.Game;
+using Server.Migrations;
 using Server.Utils;
 using ServerCore;
 using System;
@@ -173,6 +174,25 @@ namespace Server
                 MyPlayer.Info.PosInfo.PosY = 0;
                 MyPlayer.Stat.MergeFrom(playerInfo.StatInfo);
                 MyPlayer.Session = this;
+
+                S_ItemList itemListPacket = new S_ItemList();
+
+                using (AppDbContext db = new AppDbContext())
+                {
+                    List<ItemDb> items = db.Items
+                        .Where(i => i.OwnerId == playerInfo.PlayerDbId)
+                        .ToList();
+
+                    foreach (ItemDb itemDb in items)
+                    {
+                        // 인벤토리에 아이템 저장
+                        ItemInfo info = new ItemInfo();
+                        itemListPacket.Items.Add(info);
+                    }
+                }
+
+                // 클라이언트에도 아이템 목록 패킷 전달하여 동기화
+                Send(itemListPacket);
             }
 
             ServerState = PlayerServerState.ServerStateGame;

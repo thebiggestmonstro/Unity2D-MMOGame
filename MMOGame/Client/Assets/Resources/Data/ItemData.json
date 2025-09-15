@@ -1,0 +1,38 @@
+{
+    "weapons": [
+        {
+          "id": "1",
+          "name": "Sword of apprentice",
+          "weaponType": "Sword",
+          "damage": "10"
+        },
+        {
+          "id": "2",
+          "name": "Bow of apprentice",
+          "weaponType": "Bow",
+          "damage": "5"
+        }
+    ],
+    "armors": [
+        {
+          "id": "100",
+          "name": "Bone Armor",
+          "armorType": "Armor",
+          "defence": "15"
+        },
+        {
+          "id": "101",
+          "name": "Bone Helemt",
+          "armorType": "Helmet",
+          "defence": "5"
+        }
+    ],
+    "consumables": [
+        {
+          "id": "200",
+          "name": "HP Potion",
+          "consumableType": "Potion",
+          "damage": "10"
+        }
+    ]
+} 
