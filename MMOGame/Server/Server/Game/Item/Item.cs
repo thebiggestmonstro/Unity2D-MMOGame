@@ -31,6 +31,12 @@ namespace Server.Game.Item
             set { Info.Count = value; }
         }
 
+        public int Slot
+        {
+            get { return Info.Slot; }
+            set { Info.Slot = value; }
+        }
+
         public ItemType ItemType { get; private set; }
         public bool Stackable { get; protected set; }
 
@@ -65,6 +71,7 @@ namespace Server.Game.Item
             {
                 item.ItemDbId = itemDb.ItemDbId;
                 item.Count = itemDb.Count;
+                item.Slot = itemDb.Slot;
             }
 
             return item;
