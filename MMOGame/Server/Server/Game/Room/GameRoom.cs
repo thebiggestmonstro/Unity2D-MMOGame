@@ -36,6 +36,7 @@ namespace Server.Game
 			Map.LoadMap(mapId);
 
 			Monster monster = ObjectManager.Instance.Add<Monster>();
+			monster.Init(1);
 			monster.CellPos = new Vector2Int(5, 5);
 			EnterGame(monster);
 		}
