@@ -1,9 +1,8 @@
 ﻿using Google.Protobuf.Protocol;
 using Server.Data;
+using Server.DB;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 
 namespace Server.Game
 {
@@ -194,6 +193,17 @@ namespace Server.Game
         public override void OnDead(GameObject attacker)
         {
             base.OnDead(attacker);
+
+            GameObject owner = attacker.GetOwner();
+            if (owner.ObjectType == GameObjectType.Player)
+            {
+                RewardData rewardData = GetRandomReward();
+                if (rewardData != null)
+                {
+                    Player player = (Player)owner;
+                    DbTransaction.RewardPlayer(player, rewardData, Room);
+                }
+            }
         }
 
         RewardData GetRandomReward()
@@ -206,12 +216,15 @@ namespace Server.Game
             int sum = 0;
             foreach (RewardData rewardData in monsterData.rewards)
             {
-                sum += rewardData.proability;
+                sum += rewardData.probability;
+
                 if (rand <= sum)
                 {
                     return rewardData;
                 }
             }
+
+            return null;
         }
     }
 }

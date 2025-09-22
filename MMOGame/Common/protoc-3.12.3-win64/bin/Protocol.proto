@@ -22,6 +22,7 @@ enum MsgId {
   C_CREATE_PLAYER = 14;
   S_CREATE_PLAYER = 15;
   S_ITEM_LIST = 16;
+  S_ADD_ITEM = 17;
 }
 
 enum CreatureState {
@@ -86,10 +87,6 @@ message S_EnterGame {
   ObjectInfo player = 1;
 }
 
-message S_ItemList {
-	repeated ItemInfo items = 1;
-}
-
 message S_LeaveGame {
 }
 
@@ -151,6 +148,14 @@ message S_CreatePlayer {
 
 message C_EnterGame {
   string name = 1;
+}
+
+message S_ItemList {
+	repeated ItemInfo items = 1;
+}
+
+message S_AddItem {
+  repeated ItemInfo items = 1;
 }
 
 message LobbyPlayerInfo {

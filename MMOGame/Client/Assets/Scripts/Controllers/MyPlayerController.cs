@@ -15,7 +15,9 @@ public class MyPlayerController : PlayerController
 
 	protected override void UpdateController()
 	{
-		switch (State)
+        GetUIKeyInput();
+
+        switch (State)
 		{
 			case CreatureState.Idle:
 				GetDirInput();
@@ -88,7 +90,26 @@ public class MyPlayerController : PlayerController
 		}
 	}
 
-	protected override void MoveToNextPos()
+    void GetUIKeyInput()
+    {
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
+            UI_Inventory invenUI = gameSceneUI.InvenUI;
+
+            if (invenUI.gameObject.activeSelf)
+            {
+                invenUI.gameObject.SetActive(false);
+            }
+            else
+            {
+                invenUI.gameObject.SetActive(true);
+                invenUI.RefreshUI();
+            }
+        }
+    }
+
+    protected override void MoveToNextPos()
 	{
 		if (_moveKeyPressed == false)
 		{

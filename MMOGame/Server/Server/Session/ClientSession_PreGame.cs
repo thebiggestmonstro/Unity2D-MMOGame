@@ -178,7 +178,7 @@ namespace Server
                 using (AppDbContext db = new AppDbContext())
                 {
                     List<ItemDb> items = db.Items
-                        .Where(i => i.OwnerId == playerInfo.PlayerDbId)
+                        .Where(i => i.OwnerDbId == playerInfo.PlayerDbId)
                         .ToList();
 
                     foreach (ItemDb itemDb in items)

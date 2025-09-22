@@ -43,7 +43,7 @@ namespace Server.DB
         public int Slot { get; set; }
 
         [ForeignKey("Owner")]
-        public int? OwnerId { get; set; }
+        public int? OwnerDbId { get; set; }
         public PlayerDb Owner { get; set; }
     }
 }

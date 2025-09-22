@@ -122,7 +122,7 @@ namespace Server.Data
 	[Serializable]
 	public class RewardData
 	{
-		public int proability;
+		public int probability;
 		public int itemId;
 		public int count;
 	}
