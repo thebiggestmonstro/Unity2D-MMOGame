@@ -126,8 +126,7 @@ namespace Server.Game
         {
             if (_coolTick == 0)
             {
-                // 유효한 타겟인지
-                if (_target == null || _target.Room != Room || _target.Hp == 0)
+                if (_target == null || _target.Room != Room)
                 {
                     _target = null;
                     State = CreatureState.Moving;
@@ -158,7 +157,7 @@ namespace Server.Game
                 DataManager.SkillDict.TryGetValue(1, out skillData);
 
                 // 데미지 판정
-                _target.OnDamaged(this, skillData.damage + Stat.Attack);
+                _target.OnDamaged(this, skillData.damage + TotalAttack);
 
                 // 스킬 사용 Broadcast
                 S_Skill skill = new S_Skill() { Info = new SkillInfo() };

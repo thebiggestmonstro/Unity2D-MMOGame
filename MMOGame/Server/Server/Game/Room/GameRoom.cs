@@ -48,86 +48,75 @@ namespace Server.Game
 				monster.Update();
 			}
 
-			foreach (Projectile projectile in _projectiles.Values)
-			{
-				projectile.Update();
-			}
-
 			// 저장된 패킷을 처리
 			Flush();
 		}
 
         public void EnterGame(GameObject gameObject)
-		{
-			if (gameObject == null)
-				return;
+        {
+            if (gameObject == null)
+                return;
 
-			GameObjectType type = ObjectManager.GetObjectTypeById(gameObject.Id);
+            GameObjectType type = ObjectManager.GetObjectTypeById(gameObject.Id);
 
-            // 플레이어의 GameRoom 입장 및 스폰 처리
             if (type == GameObjectType.Player)
-			{
-				Player player = gameObject as Player;
-				_players.Add(gameObject.Id, player);
-				player.Room = this;
+            {
+                Player player = gameObject as Player;
+                _players.Add(gameObject.Id, player);
+                player.Room = this;
 
-				Map.ApplyMove(player, new Vector2Int(player.CellPos.x, player.CellPos.y));
+                player.RefreshAdditionalStat();
 
-				{
-					S_EnterGame enterPacket = new S_EnterGame();
-					enterPacket.Player = player.Info;
-					player.Session.Send(enterPacket);
+                Map.ApplyMove(player, new Vector2Int(player.CellPos.x, player.CellPos.y));
 
-                    // 입장한 플레이어의 시점에서 다른 플레이어들 스폰
+                {
+                    S_EnterGame enterPacket = new S_EnterGame();
+                    enterPacket.Player = player.Info;
+                    player.Session.Send(enterPacket);
+
                     S_Spawn spawnPacket = new S_Spawn();
-					foreach (Player p in _players.Values)
-					{
-						if (player != p)
-							spawnPacket.Objects.Add(p.Info);
-					}
+                    foreach (Player p in _players.Values)
+                    {
+                        if (player != p)
+                            spawnPacket.Objects.Add(p.Info);
+                    }
 
-					// 입장한 플레이어의 시점에서 몬스터들 스폰
-					foreach (Monster m in _monsters.Values)
-					{
-						spawnPacket.Objects.Add(m.Info);
-					}
+                    foreach (Monster m in _monsters.Values)
+                        spawnPacket.Objects.Add(m.Info);
 
-                    // 입장한 플레이어의 시점에서 투사체들 스폰
                     foreach (Projectile p in _projectiles.Values)
-					{
-						spawnPacket.Objects.Add(p.Info);
-					}
+                        spawnPacket.Objects.Add(p.Info);
 
-					player.Session.Send(spawnPacket);
-				}
-			}
-            // 몬스터의 GameRoom 입장 및 스폰 처리
+                    player.Session.Send(spawnPacket);
+                }
+            }
             else if (type == GameObjectType.Monster)
-			{
-				Monster monster = gameObject as Monster;
-				_monsters.Add(gameObject.Id, monster);
-				monster.Room = this;
+            {
+                Monster monster = gameObject as Monster;
+                _monsters.Add(gameObject.Id, monster);
+                monster.Room = this;
 
-				Map.ApplyMove(monster, new Vector2Int(monster.CellPos.x, monster.CellPos.y));
-			}
-            // 투사체의 GameRoom 입장 및 스폰 처리
+                Map.ApplyMove(monster, new Vector2Int(monster.CellPos.x, monster.CellPos.y));
+            }
             else if (type == GameObjectType.Projectile)
-			{
-				Projectile projectile = gameObject as Projectile;
-				_projectiles.Add(gameObject.Id, projectile);
-				projectile.Room = this;
-			}
-            // 입장한 플레이어를 포함한 오브젝트들의 Spawn을 다른 플레이어들에게 전송
+            {
+                Projectile projectile = gameObject as Projectile;
+                _projectiles.Add(gameObject.Id, projectile);
+                projectile.Room = this;
+
+                projectile.Update();
+            }
+
             {
                 S_Spawn spawnPacket = new S_Spawn();
-				spawnPacket.Objects.Add(gameObject.Info);
-				foreach (Player p in _players.Values)
-				{
-					if (p.Id != gameObject.Id)
-						p.Session.Send(spawnPacket);
-				}
-			}
-		}
+                spawnPacket.Objects.Add(gameObject.Info);
+                foreach (Player p in _players.Values)
+                {
+                    if (p.Id != gameObject.Id)
+                        p.Session.Send(spawnPacket);
+                }
+            }
+        }
 
         public void LeaveGame(int objectId)
 		{

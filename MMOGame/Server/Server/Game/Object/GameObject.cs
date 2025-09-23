@@ -20,7 +20,10 @@ namespace Server.Game
 		public PositionInfo PosInfo { get; private set; } = new PositionInfo();
 		public StatInfo Stat { get; private set; } = new StatInfo();
 
-		public int Hp
+        public virtual int TotalAttack { get { return Stat.Attack; } }
+        public virtual int TotalDefence { get { return 0; } }
+
+        public int Hp
 		{
 			get { return Stat.Hp; }
 			set { Stat.Hp = Math.Clamp(value, 0, Stat.MaxHp); }
@@ -109,25 +112,26 @@ namespace Server.Game
 				return MoveDir.Down;
 		}
 
-		public virtual void OnDamaged(GameObject attacker, int damage)
-		{
-			if (Room == null)
-				return;
+        public virtual void OnDamaged(GameObject attacker, int damage)
+        {
+            if (Room == null)
+                return;
 
-			Stat.Hp = Math.Max(Stat.Hp - damage, 0);
+            damage = Math.Max(damage - TotalDefence, 0);
+            Stat.Hp = Math.Max(Stat.Hp - damage, 0);
 
-			S_ChangeHp changePacket = new S_ChangeHp();
-			changePacket.ObjectId = Id;
-			changePacket.Hp = Stat.Hp;
-			Room.Broadcast(changePacket);
+            S_ChangeHp changePacket = new S_ChangeHp();
+            changePacket.ObjectId = Id;
+            changePacket.Hp = Stat.Hp;
+            Room.Broadcast(changePacket);
 
-			if (Stat.Hp <= 0)
-			{
-				OnDead(attacker);
-			}
-		}
+            if (Stat.Hp <= 0)
+            {
+                OnDead(attacker);
+            }
+        }
 
-		public virtual void OnDead(GameObject attacker)
+        public virtual void OnDead(GameObject attacker)
 		{
             if (Room == null)
                 return;
