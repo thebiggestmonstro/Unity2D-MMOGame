@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.DB;
 using Server.Game;
-using Server.Game.Item;
+using Server.Game;
 using Server.Utils;
 using ServerCore;
 using System.Collections.Generic;

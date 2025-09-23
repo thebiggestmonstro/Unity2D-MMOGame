@@ -190,6 +190,18 @@ class PacketHandler
 
         Debug.Log("아이템을 획득했습니다!");
     }
+
+    public static void S_EquipItemHandler(PacketSession session, IMessage packet)
+    {
+        S_EquipItem equippedItem = (S_EquipItem)packet;
+
+        
+    }
+
+    public static void S_ChangeStatHandler(PacketSession session, IMessage packet)
+    {
+        S_ChangeStat changedStat = (S_ChangeStat)packet;
+    }
 }
 
 
