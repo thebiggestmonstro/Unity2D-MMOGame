@@ -159,11 +159,11 @@ class PacketHandler
 	{
 		S_ItemList itemList = (S_ItemList)packet;
 		UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
-		UI_Inventory invenUI = gameSceneUI.InvenUI;
+        gameSceneUI.InvenUI.RefreshUI();
+        gameSceneUI.StatUI.RefreshUI();
 
-		Managers.Inven.Clear();
+        Managers.Inven.Clear();
 
-		// 메모리에 아이템 정보 적용
 		foreach (ItemInfo itemInfo in itemList.Items)
 		{
 			Item item = Item.MakeItem(itemInfo);
@@ -171,45 +171,46 @@ class PacketHandler
 		}
 
         if (Managers.Object.MyPlayer != null)
-            Managers.Object.MyPlayer.RefreshAdditonalStat();
+            Managers.Object.MyPlayer.RefreshAdditionalStat();
 	}
 
-	public static void S_AddItemHandler(PacketSession session, IMessage packet)
-	{
+    public static void S_AddItemHandler(PacketSession session, IMessage packet)
+    {
         S_AddItem itemList = (S_AddItem)packet;
 
-		// 메오리에 아이템 정보 적용
         foreach (ItemInfo itemInfo in itemList.Items)
         {
             Item item = Item.MakeItem(itemInfo);
             Managers.Inven.Add(item);
         }
 
-        Debug.Log("아이템을 획득했습니다!");
+        Debug.Log("아이템 획득!");
 
         UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
-        UI_Inventory invenUI = gameSceneUI.InvenUI;
-		invenUI.RefreshUI();
+        gameSceneUI.InvenUI.RefreshUI();
+        gameSceneUI.StatUI.RefreshUI();
 
-		if(Managers.Object.MyPlayer != null)
-			Managers.Object.MyPlayer.RefreshAdditonalStat();
+        if (Managers.Object.MyPlayer != null)
+            Managers.Object.MyPlayer.RefreshAdditionalStat();
     }
 
     public static void S_EquipItemHandler(PacketSession session, IMessage packet)
     {
         S_EquipItem equipItemOk = (S_EquipItem)packet;
 
-		// 메모리에 아이템 정보 적용
-		Item item = Managers.Inven.Get(equipItemOk.ItemDbId);
-		if (item == null)
-			return;
+        Item item = Managers.Inven.Get(equipItemOk.ItemDbId);
+        if (item == null)
+            return;
 
-		item.Equipped = equipItemOk.Equipped;
-		Debug.Log("아이템 장착");
+        item.Equipped = equipItemOk.Equipped;
+        Debug.Log("아이템 착용!");
 
         UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
-        UI_Inventory invenUI = gameSceneUI.InvenUI;
-        invenUI.RefreshUI();
+        gameSceneUI.InvenUI.RefreshUI();
+        gameSceneUI.StatUI.RefreshUI();
+
+        if (Managers.Object.MyPlayer != null)
+            Managers.Object.MyPlayer.RefreshAdditionalStat();
     }
 
     public static void S_ChangeStatHandler(PacketSession session, IMessage packet)

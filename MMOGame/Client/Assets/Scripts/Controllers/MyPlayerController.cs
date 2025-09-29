@@ -15,7 +15,7 @@ public class MyPlayerController : PlayerController
 	protected override void Init()
 	{
 		base.Init();
-		RefreshAdditonalStat();
+		RefreshAdditionalStat();
 	}
 
 	protected override void UpdateController()
@@ -97,19 +97,34 @@ public class MyPlayerController : PlayerController
 
     void GetUIKeyInput()
     {
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
-            UI_Inventory invenUI = gameSceneUI.InvenUI;
+		if (Input.GetKeyDown(KeyCode.I))
+		{
+			UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
+			UI_Inventory invenUI = gameSceneUI.InvenUI;
 
-            if (invenUI.gameObject.activeSelf)
+			if (invenUI.gameObject.activeSelf)
+			{
+				invenUI.gameObject.SetActive(false);
+			}
+			else
+			{
+				invenUI.gameObject.SetActive(true);
+				invenUI.RefreshUI();
+			}
+		}
+		else if (Input.GetKeyDown(KeyCode.C))
+		{
+            UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
+            UI_Stat statUI = gameSceneUI.StatUI;
+
+            if (statUI.gameObject.activeSelf)
             {
-                invenUI.gameObject.SetActive(false);
+                statUI.gameObject.SetActive(false);
             }
             else
             {
-                invenUI.gameObject.SetActive(true);
-                invenUI.RefreshUI();
+                statUI.gameObject.SetActive(true);
+                statUI.RefreshUI();
             }
         }
     }
@@ -163,7 +178,7 @@ public class MyPlayerController : PlayerController
 		}
 	}
 
-    public void RefreshAdditonalStat()
+    public void RefreshAdditionalStat()
     {
         WeaponDamage = 0;
         ArmorDefence = 0;
