@@ -21,18 +21,41 @@ namespace Server
 	class Program
 	{
 		static Listener _listener = new Listener();
-		static List<System.Timers.Timer> _timers = new List<System.Timers.Timer>();	// Main 프로그램에서 사용하는 타이머 저장
 
-		// C#에서 제공하는 Timer의 Elapsed 어트리뷰트를 사용하여 주기적으로 콜백함수를 실행
-		static void TickRoom(GameRoom room, int tickCount)
-		{ 
-			var timer = new System.Timers.Timer();
-			timer.Interval = tickCount;
-			timer.Elapsed += ((s, e) => { room.Update(); });
-			timer.AutoReset = true;
-			timer.Enabled = true;
+		// 게임 관련 로직을 수행하는 스레드
+		static void GameLogicTask()
+		{
+			while (true)
+			{
+				GameLogic.Instance.Update();
+				Thread.Sleep(0);    // Job을 전부 수행했다면 Sleep을 수행 -> 해당 작업을 통해 게임 로직 스레드에 대한 CPU의 부적절한 낭비를 방지
+            }
+		}
 
-			_timers.Add(timer);
+		// DB 관련 로직을 수행하는 메인 스레드
+		static void DbTask()
+		{
+            while (true)
+            {
+                DbTransaction.Instance.Flush();
+				Thread.Sleep(0);	// Job을 전부 수행했다면 Sleep을 수행 -> 해당 작업을 통해 메인 스레드에 대한 CPU의 부적절한 낭비를 방지
+            }
+        }
+
+		// 네트워크 관련 로직을 수행하는 스레드
+		static void NetworkTask()
+		{
+			while (true)
+			{ 
+				List<ClientSession> sessions = SessionManager.Instance.GetSessions();
+				
+				foreach (ClientSession session in sessions)
+				{
+					session.FlushSend();
+				}
+
+				Thread.Sleep(0);
+			}
 		}
 
 		static void Main(string[] args)
@@ -40,8 +63,10 @@ namespace Server
 			ConfigManager.LoadConfig();
 			DataManager.LoadData();
 
-            GameRoom room = RoomManager.Instance.Add(1);
-			TickRoom(room, 50);
+            GameLogic.Instance.Push(() =>
+            {
+                GameRoom room = GameLogic.Instance.Add(1);
+            });
 
 			// DNS (Domain Name System)
 			string host = Dns.GetHostName();
@@ -52,14 +77,20 @@ namespace Server
 			_listener.Init(endPoint, () => { return SessionManager.Instance.Generate(); });
 			Console.WriteLine("Listening...");
 
-			//FlushRoom();
-			//JobTimer.Instance.Push(FlushRoom);
-
-			// TODO
-			while (true)
+			// GameLogicTask를 통한 GameRoom 관련 로직을 수행하는 스레드 생성 및 실행
 			{
-				DbTransaction.Instance.Flush();
+				Task gameLocigTask = new Task(GameLogicTask, TaskCreationOptions.LongRunning);
+				gameLocigTask.Start();
 			}
+
+			// NetworkTask를 통한 네트워크 관련 로직을 수행하는 스레드 생성 및 실행
+            {
+                Task networkTask = new Task(NetworkTask, TaskCreationOptions.LongRunning);
+                networkTask.Start();
+            }
+
+            // DbTask를 통한 DB 관련 로직을 메인 스레드에서 수행
+            DbTask();
 		}
 	}
 }
