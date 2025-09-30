@@ -4,9 +4,10 @@ using System.Text;
 
 namespace Server.Game.Job
 {
-    public interface IJob
+    public abstract class IJob
     {
-        void Execute();
+        public abstract void Execute();
+        public bool Cancel { get; set; } = false;
     }
 
     // 인자가 없는 패킷을 저장하는 Job
@@ -21,9 +22,10 @@ namespace Server.Game.Job
         }
 
         // 인자가 없는 패킷 처리 요청
-        public void Execute() 
+        public override void Execute() 
         { 
-            _action.Invoke();
+            if(Cancel == false)
+                _action.Invoke();
         }
     }
 
@@ -41,9 +43,10 @@ namespace Server.Game.Job
         }
 
         // 인자가 1개 있는 패킷 처리 요청
-        public void Execute()
+        public override void Execute()
         {
-            _action.Invoke(_t1);
+            if (Cancel == false)
+                _action.Invoke(_t1);
         }
     }
 
@@ -63,9 +66,10 @@ namespace Server.Game.Job
         }
 
         // 인자가 2개 있는 패킷 처리 요청
-        public void Execute()
+        public override void Execute()
         {
-            _action.Invoke(_t1, _t2);
+            if (Cancel == false)
+                _action.Invoke(_t1, _t2);
         }
     }
 
@@ -87,9 +91,10 @@ namespace Server.Game.Job
         }
 
         // 인자가 3개 있는 패킷 처리 요청
-        public void Execute()
+        public override void Execute()
         {
-            _action.Invoke(_t1, _t2, _t3);
+            if (Cancel == false)
+                _action.Invoke(_t1, _t2, _t3);
         }
     }
 }
