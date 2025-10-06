@@ -29,7 +29,7 @@ namespace Server.Game
 			//gameRoom.Push(GameRoom.Init, gameRoom, mapId);
 
 			// 인스턴스 버전의 Init 함수를 사용하는 경우
-			gameRoom.Push(gameRoom.Init, mapId);
+			gameRoom.Push(gameRoom.Init, mapId, 10);
 
 			gameRoom.RoomId = _roomId;
 			_rooms.Add(_roomId, gameRoom);

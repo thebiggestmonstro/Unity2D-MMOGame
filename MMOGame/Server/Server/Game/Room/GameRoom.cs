@@ -4,6 +4,7 @@ using Server.Data;
 using Server.Game.Job;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Server.Game
@@ -15,6 +16,9 @@ namespace Server.Game
 		Dictionary<int, Player> _players = new Dictionary<int, Player>();
 		Dictionary<int, Monster> _monsters = new Dictionary<int, Monster>();
 		Dictionary<int, Projectile> _projectiles = new Dictionary<int, Projectile>();
+
+		public Zone[,] Zones { get; private set; }
+		public int ZoneCells { get; private set; }
 
 		public Map Map { get; private set; } = new Map();
 
@@ -30,10 +34,39 @@ namespace Server.Game
 		//	room.EnterGame(monster);
 		//}
 
+		// 해당 좌표가 위치해 있는 Zone을 가져오는 함수
+		public Zone GetZone(Vector2Int cellPos)
+		{
+			int x = (cellPos.x - Map.MinX) / ZoneCells;
+			int y = (Map.MaxY - cellPos.y) / ZoneCells;
+
+			if (x < 0 || x >= Zones.GetLength(1))
+				return null;
+
+			if (y < 0 || y >= Zones.GetLength(0))
+				return null;
+
+			return Zones[y, x];
+		}
+
 		// 또는 static 함수로 수정하지 않고 다음의 방법을 사용
-		public void Init(int mapId)
+		public void Init(int mapId, int zoneCells)
 		{ 
 			Map.LoadMap(mapId);
+
+			// Zone
+			ZoneCells = zoneCells;
+			int countY = (Map.SizeY + zoneCells - 1) / zoneCells;
+			int countX = (Map.SizeX + zoneCells - 1) / zoneCells;
+			Zones = new Zone[countY, countX];
+
+			for (int y = 0; y < countY; y++)
+			{
+				for (int x = 0; x < countX; x++)
+				{
+					Zones[y, x] = new Zone(y, x);
+				}
+			}
 
 			Monster monster = ObjectManager.Instance.Add<Monster>();
 			monster.Init(1);
@@ -43,7 +76,6 @@ namespace Server.Game
 
 		public void Update()
 		{
-			// 저장된 패킷을 처리
 			Flush();
 		}
 
@@ -63,6 +95,7 @@ namespace Server.Game
                 player.RefreshAdditionalStat();
 
                 Map.ApplyMove(player, new Vector2Int(player.CellPos.x, player.CellPos.y));
+				GetZone(player.CellPos).Players.Add(player);
 
                 {
                     S_EnterGame enterPacket = new S_EnterGame();
@@ -119,24 +152,23 @@ namespace Server.Game
 		{
 			GameObjectType type = ObjectManager.GetObjectTypeById(objectId);
 
-            // 플레이어의 GameRoom 퇴장 및 스폰 해제 처리
             if (type == GameObjectType.Player)
 			{
 				Player player = null;
 				if (_players.Remove(objectId, out player) == false)
 					return;
 
+				GetZone(player.CellPos).Players.Remove(player);
+
 				player.OnLeaveGame();
                 Map.ApplyLeave(player);
                 player.Room = null;
 
-                // 퇴장한 플레이어의 클라이언트에 퇴장 정보 전송
                 {
                     S_LeaveGame leavePacket = new S_LeaveGame();
 					player.Session.Send(leavePacket);
 				}
 			}
-            // 몬스터의 GameRoom 퇴장 및 스폰 해제 처리
             else if (type == GameObjectType.Monster)
 			{
 				Monster monster = null;
@@ -146,7 +178,6 @@ namespace Server.Game
 				Map.ApplyLeave(monster);
                 monster.Room = null;
             }
-            // 투사체의 GameRoom 퇴장 및 스폰 해제 처리
             else if (type == GameObjectType.Projectile)
 			{
 				Projectile projectile = null;
@@ -156,7 +187,6 @@ namespace Server.Game
 				projectile.Room = null;
 			}
 
-            // 퇴장한 플레이어를 포함한 오브젝트들의 Despawn을 다른 플레이어들에게 전송
             {
                 S_Despawn despawnPacket = new S_Despawn();
 				despawnPacket.ObjectIds.Add(objectId);
@@ -168,7 +198,6 @@ namespace Server.Game
 			}
 		}
 
-		// 아래의 2개의 함수는 GameRoom 인스턴스에서 호출하면 문제없으므로 따로 수정하지 않음
 		public Player FindPlayer(Func<GameObject, bool> condition)
 		{
 			foreach (Player player in _players.Values)
@@ -180,12 +209,37 @@ namespace Server.Game
 			return null;
 		}
 
-		public void Broadcast(IMessage packet)
+		public void Broadcast(Vector2Int pos, IMessage packet)
 		{
-			foreach (Player p in _players.Values)
+			List<Zone> zones = GetAdjacentZones(pos);
+
+			foreach (Player p in zones.SelectMany(z => z.Players))
 			{
 				p.Session.Send(packet);
 			}
+		}
+
+		// 인접한 Zone을 찾는 함수
+		public List<Zone> GetAdjacentZones(Vector2Int cellPos, int cells = 5)
+		{ 
+			HashSet<Zone> zones = new HashSet<Zone>();
+
+			int[] delta = new int[2] { -cells, +cells };
+			foreach (int dy in delta)
+			{
+				foreach (int dx in delta)
+				{
+					int y = cellPos.y + dy;
+					int x = cellPos.x + dx;
+					Zone zone = GetZone(new Vector2Int(x, y));
+					if (zone == null)
+						continue;
+
+					zones.Add(zone);
+				}
+			}
+
+			return zones.ToList();
 		}
 	}
 }

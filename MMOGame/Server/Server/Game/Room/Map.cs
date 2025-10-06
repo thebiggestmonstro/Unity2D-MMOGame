@@ -161,6 +161,21 @@ namespace Server.Game
 				_objects[y, x] = gameObject;
 			}
 
+			Player p = gameObject as Player;
+			if (p != null)
+			{
+				Zone now = gameObject.Room.GetZone(gameObject.CellPos);
+				Zone after = gameObject.Room.GetZone(dest);
+
+				if (now != after)
+				{
+                    if (now != null)
+						now.Players.Remove(p);
+					if (after != null)
+						after.Players.Add(p);
+				}
+			}
+
 			posInfo.PosX = dest.x;
 			posInfo.PosY = dest.y;
 			return true;
