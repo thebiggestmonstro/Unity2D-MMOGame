@@ -77,20 +77,23 @@ namespace Server
 			_listener.Init(endPoint, () => { return SessionManager.Instance.Generate(); });
 			Console.WriteLine("Listening...");
 
-			// GameLogicTask를 통한 GameRoom 관련 로직을 수행하는 스레드 생성 및 실행
-			{
-				Task gameLocigTask = new Task(GameLogicTask, TaskCreationOptions.LongRunning);
-				gameLocigTask.Start();
+            // DbTask를 통한 DB 관련 로직을 수행하는 스레드 생성 및 실행
+            {
+				Thread t = new Thread(DbTask);
+				t.Name = "DB";
+				t.Start();
 			}
 
 			// NetworkTask를 통한 네트워크 관련 로직을 수행하는 스레드 생성 및 실행
             {
-                Task networkTask = new Task(NetworkTask, TaskCreationOptions.LongRunning);
-                networkTask.Start();
+				Thread t = new Thread(NetworkTask);
+				t.Name = "Network";
+				t.Start();
             }
 
-            // DbTask를 통한 DB 관련 로직을 메인 스레드에서 수행
-            DbTask();
-		}
+			//  GameLogicTask를 통한 GameRoom 관련 로직을 메인 스레드에서 수행
+			Thread.CurrentThread.Name = "GameLogic";
+			GameLogicTask();
+        }
 	}
 }
