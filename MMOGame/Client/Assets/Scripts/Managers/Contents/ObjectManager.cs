@@ -21,6 +21,10 @@ public class ObjectManager
 		if (MyPlayer != null && MyPlayer.Id == info.ObjectId)
 			return;
 
+		// 오브젝트를 중복으로 추가하는 경우를 방지
+		if (_objects.ContainsKey(info.ObjectId))
+			return;
+
 		GameObjectType objectType = GetObjectTypeById(info.ObjectId);
 		if (objectType == GameObjectType.Player)
 		{
@@ -78,6 +82,10 @@ public class ObjectManager
 	{
         // 로컬 플레이어가 이미 제거된 상태에서, 제거되는 경우를 방지
         if (MyPlayer != null && MyPlayer.Id == id)
+            return;
+
+        // 오브젝트가 이미 제거된 상태에서, 제거되는 경우를 방지
+        if (_objects.ContainsKey(id) == false)
             return;
 
         GameObject go = FindById(id);

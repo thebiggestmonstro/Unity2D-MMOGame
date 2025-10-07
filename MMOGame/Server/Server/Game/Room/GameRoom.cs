@@ -72,7 +72,7 @@ namespace Server.Game
 			Monster monster = ObjectManager.Instance.Add<Monster>();
 			monster.Init(1);
 			monster.CellPos = new Vector2Int(5, 5);
-			EnterGame(monster);
+			EnterGame(monster, randomPos: true);
 		}
 
 		public void Update()
@@ -80,10 +80,26 @@ namespace Server.Game
 			Flush();
 		}
 
-        public void EnterGame(GameObject gameObject)
+        Random _rand = new Random();
+        public void EnterGame(GameObject gameObject, bool randomPos)
         {
             if (gameObject == null)
                 return;
+
+            if (randomPos)
+            {
+                Vector2Int respawnPos;
+                while (true)
+                {
+                    respawnPos.x = _rand.Next(Map.MinX, Map.MaxX + 1);
+                    respawnPos.y = _rand.Next(Map.MinY, Map.MaxY + 1);
+                    if (Map.Find(respawnPos) == null)
+                    {
+                        gameObject.CellPos = respawnPos;
+                        break;
+                    }
+                }
+            }
 
             GameObjectType type = ObjectManager.GetObjectTypeById(gameObject.Id);
 
@@ -127,49 +143,67 @@ namespace Server.Game
                 GetZone(projectile.CellPos).Projectiles.Add(projectile);
                 projectile.Update();
             }
+
+			{
+				S_Spawn spawnPacket = new S_Spawn();
+				spawnPacket.Objects.Add(gameObject.Info);
+				Broadcast(gameObject.CellPos, spawnPacket);
+			}
         }
 
         public void LeaveGame(int objectId)
 		{
 			GameObjectType type = ObjectManager.GetObjectTypeById(objectId);
 
-            if (type == GameObjectType.Player)
+			Vector2Int cellPos;
+			if (type == GameObjectType.Player)
 			{
 				Player player = null;
 				if (_players.Remove(objectId, out player) == false)
 					return;
 
-				GetZone(player.CellPos).Players.Remove(player);
+				cellPos = player.CellPos;
 
 				player.OnLeaveGame();
-                Map.ApplyLeave(player);
-                player.Room = null;
+				Map.ApplyLeave(player);
+				player.Room = null;
 
-                {
-                    S_LeaveGame leavePacket = new S_LeaveGame();
+				{
+					S_LeaveGame leavePacket = new S_LeaveGame();
 					player.Session.Send(leavePacket);
 				}
 			}
-            else if (type == GameObjectType.Monster)
+			else if (type == GameObjectType.Monster)
 			{
-                Monster monster = null;
-                if (_monsters.Remove(objectId, out monster) == false)
-                    return;
+				Monster monster = null;
+				if (_monsters.Remove(objectId, out monster) == false)
+					return;
 
-                GetZone(monster.CellPos).Monsters.Remove(monster);
-                Map.ApplyLeave(monster);
-                monster.Room = null;
-            }
-            else if (type == GameObjectType.Projectile)
+				cellPos = monster.CellPos;
+				Map.ApplyLeave(monster);
+				monster.Room = null;
+			}
+			else if (type == GameObjectType.Projectile)
 			{
 				Projectile projectile = null;
 				if (_projectiles.Remove(objectId, out projectile) == false)
 					return;
 
-                GetZone(projectile.CellPos).Projectiles.Remove(projectile);
-                projectile.Room = null;
+				cellPos = projectile.CellPos;
+				Map.ApplyLeave(projectile);
+				projectile.Room = null;
 			}
-		}
+			else
+			{
+				return;
+			}
+
+			{
+				S_Despawn despawnPacket = new S_Despawn();
+				despawnPacket.ObjectIds.Add(objectId);
+				Broadcast(cellPos, despawnPacket);
+			}
+        }
 
 		public Player FindPlayer(Func<GameObject, bool> condition)
 		{
