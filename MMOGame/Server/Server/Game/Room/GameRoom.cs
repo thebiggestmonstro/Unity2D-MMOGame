@@ -11,6 +11,7 @@ namespace Server.Game
 {
 	public partial class GameRoom : JobSerializer
 	{
+		public const int VisionCells = 5;
 		public int RoomId { get; set; }
 
 		Dictionary<int, Player> _players = new Dictionary<int, Player>();
@@ -97,25 +98,13 @@ namespace Server.Game
                 Map.ApplyMove(player, new Vector2Int(player.CellPos.x, player.CellPos.y));
 				GetZone(player.CellPos).Players.Add(player);
 
+				// VisionCube를 도입하기 이전의 Spawn 패킷을 나에게 전송하는 로직을 제거
                 {
                     S_EnterGame enterPacket = new S_EnterGame();
                     enterPacket.Player = player.Info;
                     player.Session.Send(enterPacket);
 
-                    S_Spawn spawnPacket = new S_Spawn();
-                    foreach (Player p in _players.Values)
-                    {
-                        if (player != p)
-                            spawnPacket.Objects.Add(p.Info);
-                    }
-
-                    foreach (Monster m in _monsters.Values)
-                        spawnPacket.Objects.Add(m.Info);
-
-                    foreach (Projectile p in _projectiles.Values)
-                        spawnPacket.Objects.Add(p.Info);
-
-                    player.Session.Send(spawnPacket);
+					player.Vision.Update();
                 }
             }
             else if (type == GameObjectType.Monster)
@@ -124,6 +113,7 @@ namespace Server.Game
                 _monsters.Add(gameObject.Id, monster);
                 monster.Room = this;
 
+                GetZone(monster.CellPos).Monsters.Add(monster);
                 Map.ApplyMove(monster, new Vector2Int(monster.CellPos.x, monster.CellPos.y));
 
                 monster.Update();
@@ -134,17 +124,8 @@ namespace Server.Game
                 _projectiles.Add(gameObject.Id, projectile);
                 projectile.Room = this;
 
+                GetZone(projectile.CellPos).Projectiles.Add(projectile);
                 projectile.Update();
-            }
-
-            {
-                S_Spawn spawnPacket = new S_Spawn();
-                spawnPacket.Objects.Add(gameObject.Info);
-                foreach (Player p in _players.Values)
-                {
-                    if (p.Id != gameObject.Id)
-                        p.Session.Send(spawnPacket);
-                }
             }
         }
 
@@ -171,11 +152,12 @@ namespace Server.Game
 			}
             else if (type == GameObjectType.Monster)
 			{
-				Monster monster = null;
-				if (_monsters.Remove(objectId, out monster) == false)
-					return;
+                Monster monster = null;
+                if (_monsters.Remove(objectId, out monster) == false)
+                    return;
 
-				Map.ApplyLeave(monster);
+                GetZone(monster.CellPos).Monsters.Remove(monster);
+                Map.ApplyLeave(monster);
                 monster.Room = null;
             }
             else if (type == GameObjectType.Projectile)
@@ -184,17 +166,8 @@ namespace Server.Game
 				if (_projectiles.Remove(objectId, out projectile) == false)
 					return;
 
-				projectile.Room = null;
-			}
-
-            {
-                S_Despawn despawnPacket = new S_Despawn();
-				despawnPacket.ObjectIds.Add(objectId);
-				foreach (Player p in _players.Values)
-				{
-					if (p.Id != objectId)
-						p.Session.Send(despawnPacket);
-				}
+                GetZone(projectile.CellPos).Projectiles.Remove(projectile);
+                projectile.Room = null;
 			}
 		}
 
@@ -215,12 +188,22 @@ namespace Server.Game
 
 			foreach (Player p in zones.SelectMany(z => z.Players))
 			{
-				p.Session.Send(packet);
+                int dx = p.CellPos.x - pos.x;
+                int dy = p.CellPos.y - pos.y;
+
+                // VisionCube로 판단할 수 있는 시야각에 플레이어가 존재하는지 판단
+                if (Math.Abs(dx) > GameRoom.VisionCells)
+                    continue;
+                if (Math.Abs(dy) > GameRoom.VisionCells)
+                    continue;
+
+				// 시야각에 들어오는 다른 플레이어들에게 브로드캐스트
+                p.Session.Send(packet);
 			}
 		}
 
 		// 인접한 Zone을 찾는 함수
-		public List<Zone> GetAdjacentZones(Vector2Int cellPos, int cells = 5)
+		public List<Zone> GetAdjacentZones(Vector2Int cellPos, int cells = VisionCells)
 		{ 
 			HashSet<Zone> zones = new HashSet<Zone>();
 

@@ -17,6 +17,10 @@ public class ObjectManager
 
 	public void Add(ObjectInfo info, bool myPlayer = false)
 	{
+		// 로컬 플레이어가 이미 추가된 상태에서, 추가되는 경우를 방지
+		if (MyPlayer != null && MyPlayer.Id == info.ObjectId)
+			return;
+
 		GameObjectType objectType = GetObjectTypeById(info.ObjectId);
 		if (objectType == GameObjectType.Player)
 		{
@@ -72,7 +76,11 @@ public class ObjectManager
 
 	public void Remove(int id)
 	{
-		GameObject go = FindById(id);
+        // 로컬 플레이어가 이미 제거된 상태에서, 제거되는 경우를 방지
+        if (MyPlayer != null && MyPlayer.Id == id)
+            return;
+
+        GameObject go = FindById(id);
 		if (go == null)
 			return;
 

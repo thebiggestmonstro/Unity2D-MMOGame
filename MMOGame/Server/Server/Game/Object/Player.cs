@@ -11,8 +11,8 @@ namespace Server.Game
     {
         public int PlayerDbId { get; set; }
         public ClientSession Session { get; set; }
+        public VisionCube Vision { get; private set; }
 
-        // Inventory는 GameRoom에서 건들게 되므로 따로 lock을 설정하지는 않음
         public Inventory Inven { get; private set; } = new Inventory();
 
         public int WeaponDamage { get; private set; }
@@ -24,6 +24,7 @@ namespace Server.Game
         public Player()
 		{
 			ObjectType = GameObjectType.Player;
+            Vision = new VisionCube(this);
 		}
 
 		public override void OnDamaged(GameObject attacker, int damage)
