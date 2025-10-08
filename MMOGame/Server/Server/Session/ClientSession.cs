@@ -64,7 +64,10 @@ namespace Server
 			{ 
 				S_Connected connectedPacket = new S_Connected();
 				Send(connectedPacket);
-			}			
+			}
+
+			// 클라이언트가 서버와 연결된 시점부터 5초 간격으로 Ping 전송
+			GameLogic.Instance.PushAfter(5000, Ping);
 		}
 
 		public override void OnRecvPacket(ArraySegment<byte> buffer)
@@ -76,6 +79,9 @@ namespace Server
 		{
             GameLogic.Instance.Push(() =>
             {
+				if (MyPlayer == null)
+					return;
+
                 GameRoom room = GameLogic.Instance.Find(1);
                 room.Push(room.LeaveGame, MyPlayer.Info.ObjectId);
             });
@@ -89,6 +95,36 @@ namespace Server
 		{
 			//Console.WriteLine($"Transferred bytes: {numOfBytes}");
 		}
+
+		long _pingpongTick = 0;
+		public void Ping()
+		{
+			// 서버 - 클라간의 Ping 교환이 발생
+			if (_pingpongTick > 0)
+			{
+				long delta = (System.Environment.TickCount64 - _pingpongTick);
+				
+				// Ping 교환이 30초 이상인 경우 강제 연결 중지
+				if (delta > 30 * 1000)
+				{
+					Console.WriteLine($"Disconnected by PingCheck");
+					Disconnect();
+					return;
+				}
+			}
+
+			S_Ping pingPacket = new S_Ping();
+			Send(pingPacket);
+
+			// 클라이언트에 5초 간격으로 Ping을 전송
+			GameLogic.Instance.PushAfter(5000, Ping);
+		}
+
+		public void HandlePong()
+		{
+			_pingpongTick = System.Environment.TickCount64;
+        }
+
         #endregion
     }
 }

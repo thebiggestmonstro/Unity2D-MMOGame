@@ -1,4 +1,4 @@
-﻿using Server.Game.Job;
+﻿using Server.Game;
 using System;
 using System.Collections.Generic;
 using System.Text;

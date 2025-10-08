@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Server.Data;
-using Server.Game.Job;
+using Server.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,10 +69,12 @@ namespace Server.Game
 				}
 			}
 
-			Monster monster = ObjectManager.Instance.Add<Monster>();
-			monster.Init(1);
-			monster.CellPos = new Vector2Int(5, 5);
-			EnterGame(monster, randomPos: true);
+			for (int i = 0; i < 1000; i++)
+			{
+                Monster monster = ObjectManager.Instance.Add<Monster>();
+                monster.Init(1);
+                EnterGame(monster, randomPos: true);
+            }
 		}
 
 		public void Update()

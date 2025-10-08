@@ -14,30 +14,30 @@ namespace Server.Game
 		public int X;
 
 		public static bool operator==(Pos lhs, Pos rhs)
-		{ 
+		{
 			return lhs.Y == rhs.Y && lhs.X == rhs.X;
 		}
 
 		public static bool operator!=(Pos lhs, Pos rhs)
-		{ 
+		{
 			return !(lhs == rhs);
 		}
 
-        public override bool Equals(object obj)
-        {
+		public override bool Equals(object obj)
+		{
 			return (Pos)obj == this;
-        }
+		}
 
-        public override int GetHashCode()
-        {
+		public override int GetHashCode()
+		{
 			long value = (Y << 32) | X;
 			return value.GetHashCode();
-        }
+		}
 
-        public override string ToString()
-        {
-            return base.ToString();
-        }
+		public override string ToString()
+		{
+			return base.ToString();
+		}
 	}
 
 	public struct PQNode : IComparable<PQNode>
@@ -246,112 +246,140 @@ namespace Server.Game
 		int[] _deltaX = new int[] { 0, 0, -1, 1 };
 		int[] _cost = new int[] { 10, 10, 10, 10 };
 
-		public List<Vector2Int> FindPath(Vector2Int startCellPos, Vector2Int destCellPos, bool checkObjects = true)
-		{
-			List<Pos> path = new List<Pos>();
+        public List<Vector2Int> FindPath(Vector2Int startCellPos, Vector2Int destCellPos, bool checkObjects = true, int maxDist = 10)
+        {
+            List<Pos> path = new List<Pos>();
 
-			// 점수 매기기
-			// F = G + H
-			// F = 최종 점수 (작을 수록 좋음, 경로에 따라 달라짐)
-			// G = 시작점에서 해당 좌표까지 이동하는데 드는 비용 (작을 수록 좋음, 경로에 따라 달라짐)
-			// H = 목적지에서 얼마나 가까운지 (작을 수록 좋음, 고정)
+            // 점수 매기기
+            // F = G + H
+            // F = 최종 점수 (작을 수록 좋음, 경로에 따라 달라짐)
+            // G = 시작점에서 해당 좌표까지 이동하는데 드는 비용 (작을 수록 좋음, 경로에 따라 달라짐)
+            // H = 목적지에서 얼마나 가까운지 (작을 수록 좋음, 고정)
 
-			// (y, x) 이미 방문했는지 여부 (방문 = closed 상태)
-			HashSet<Pos> closeList = new HashSet<Pos>(); // CloseList
+            // (y, x) 이미 방문했는지 여부 (방문 = closed 상태)
+            HashSet<Pos> closeList = new HashSet<Pos>(); // CloseList
 
             // (y, x) 가는 길을 한 번이라도 발견했는지
             // 발견X => MaxValue
             // 발견O => F = G + H
             Dictionary<Pos, int> openList = new Dictionary<Pos, int>(); // OpenList
-			Dictionary<Pos, Pos> parent = new Dictionary<Pos, Pos>();
+            Dictionary<Pos, Pos> parent = new Dictionary<Pos, Pos>();
 
-			// 오픈리스트에 있는 정보들 중에서, 가장 좋은 후보를 빠르게 뽑아오기 위한 도구
-			PriorityQueue<PQNode> pq = new PriorityQueue<PQNode>();
+            // 오픈리스트에 있는 정보들 중에서, 가장 좋은 후보를 빠르게 뽑아오기 위한 도구
+            PriorityQueue<PQNode> pq = new PriorityQueue<PQNode>();
 
-			// CellPos -> ArrayPos
-			Pos pos = Cell2Pos(startCellPos);
-			Pos dest = Cell2Pos(destCellPos);
+            // CellPos -> ArrayPos
+            Pos pos = Cell2Pos(startCellPos);
+            Pos dest = Cell2Pos(destCellPos);
 
-			// 시작점 발견 (예약 진행)
-			openList.Add(pos, 10 * (Math.Abs(dest.Y - pos.Y) + Math.Abs(dest.X - pos.X)));
-			pq.Push(new PQNode() { F = 10 * (Math.Abs(dest.Y - pos.Y) + Math.Abs(dest.X - pos.X)), G = 0, Y = pos.Y, X = pos.X });
-			parent.Add(pos, pos);
+            // 시작점 발견 (예약 진행)
+            openList.Add(pos, 10 * (Math.Abs(dest.Y - pos.Y) + Math.Abs(dest.X - pos.X)));
+            pq.Push(new PQNode() { F = 10 * (Math.Abs(dest.Y - pos.Y) + Math.Abs(dest.X - pos.X)), G = 0, Y = pos.Y, X = pos.X });
+            parent.Add(pos, pos);
 
-			while (pq.Count > 0)
-			{
-				// 제일 좋은 후보를 찾는다
-				PQNode pqNode = pq.Pop();
-				Pos node = new Pos(pqNode.Y, pqNode.X);
-				// 동일한 좌표를 여러 경로로 찾아서, 더 빠른 경로로 인해서 이미 방문(closed)된 경우 스킵
-				if (closeList.Contains(node))
-					continue;
+            while (pq.Count > 0)
+            {
+                // 제일 좋은 후보를 찾는다
+                PQNode pqNode = pq.Pop();
+                Pos node = new Pos(pqNode.Y, pqNode.X);
+                // 동일한 좌표를 여러 경로로 찾아서, 더 빠른 경로로 인해서 이미 방문(closed)된 경우 스킵
+                if (closeList.Contains(node))
+                    continue;
 
-				// 방문한다
-				closeList.Add(node);
-				// 목적지 도착했으면 바로 종료
-				if (node.Y == dest.Y && node.X == dest.X)
-					break;
+                // 방문한다
+                closeList.Add(node);
 
-				// 상하좌우 등 이동할 수 있는 좌표인지 확인해서 예약(open)한다
-				for (int i = 0; i < _deltaY.Length; i++)
-				{
-					Pos next = new Pos(node.Y + _deltaY[i], node.X + _deltaX[i]);
+                // 목적지 도착했으면 바로 종료
+                if (node.Y == dest.Y && node.X == dest.X)
+                    break;
 
-					// 유효 범위를 벗어났으면 스킵
-					// 벽으로 막혀서 갈 수 없으면 스킵
-					if (next.Y != dest.Y || next.X != dest.X)
-					{
-						if (CanGo(Pos2Cell(next), checkObjects) == false) // CellPos
-							continue;
-					}
+                // 상하좌우 등 이동할 수 있는 좌표인지 확인해서 예약(open)한다
+                for (int i = 0; i < _deltaY.Length; i++)
+                {
+                    Pos next = new Pos(node.Y + _deltaY[i], node.X + _deltaX[i]);
 
-					// 이미 방문한 곳이면 스킵
-					if (closeList.Contains(next))
-						continue;
+                    // 너무 멀면 스킵
+                    if (Math.Abs(pos.Y - next.Y) + Math.Abs(pos.X - next.X) > maxDist)
+                        continue;
 
-					// 비용 계산
-					int g = 0;// node.G + _cost[i];
-					int h = 10 * ((dest.Y - next.Y) * (dest.Y - next.Y) + (dest.X - next.X) * (dest.X - next.X));
-					
-					// 다른 경로에서 더 빠른 길 이미 찾았으면 스킵
-					int value = 0;
-					if (openList.TryGetValue(next, out value) == false)
-						value = Int32.MaxValue;
+                    // 유효 범위를 벗어났으면 스킵
+                    // 벽으로 막혀서 갈 수 없으면 스킵
+                    if (next.Y != dest.Y || next.X != dest.X)
+                    {
+                        if (CanGo(Pos2Cell(next), checkObjects) == false) // CellPos
+                            continue;
+                    }
 
-					if (value < g + h)
-						continue;
+                    // 이미 방문한 곳이면 스킵
+                    if (closeList.Contains(next))
+                        continue;
 
-					// 예약 진행
-					if (openList.TryAdd(next, g + h) == false)
-						openList[next] = g + h;
+                    // 비용 계산
+                    int g = 0;// node.G + _cost[i];
+                    int h = 10 * ((dest.Y - next.Y) * (dest.Y - next.Y) + (dest.X - next.X) * (dest.X - next.X));
 
-					pq.Push(new PQNode() { F = g + h, G = g, Y = next.Y, X = next.X });
+                    // 다른 경로에서 더 빠른 길 이미 찾았으면 스킵
+                    int value = 0;
+                    if (openList.TryGetValue(next, out value) == false)
+                        value = Int32.MaxValue;
 
-					if (parent.TryAdd(next, node) == false)
-						parent[next] = node;
-				}
-			}
+                    if (value < g + h)
+                        continue;
 
-			return CalcCellPathFromParent(parent, dest);
-		}
+                    // 예약 진행
+                    if (openList.TryAdd(next, g + h) == false)
+                        openList[next] = g + h;
 
-		List<Vector2Int> CalcCellPathFromParent(Dictionary<Pos, Pos> parent, Pos dest)
-		{
-			List<Vector2Int> cells = new List<Vector2Int>();
+                    pq.Push(new PQNode() { F = g + h, G = g, Y = next.Y, X = next.X });
 
-			Pos pos = dest;
-			while (parent[pos] != pos)
-			{
-				cells.Add(Pos2Cell(pos));
-				pos = parent[pos];
-			}
-			cells.Add(Pos2Cell(pos));
-			cells.Reverse();
+                    if (parent.TryAdd(next, node) == false)
+                        parent[next] = node;
+                }
+            }
 
-			return cells;
-		}
+            return CalcCellPathFromParent(parent, dest);
+        }
 
-		Pos Cell2Pos(Vector2Int cell)
+        List<Vector2Int> CalcCellPathFromParent(Dictionary<Pos, Pos> parent, Pos dest)
+        {
+            List<Vector2Int> cells = new List<Vector2Int>();
+
+            // 이전의 경로가 하나라도 있는지 확인
+            if (parent.ContainsKey(dest) == false)
+            {
+                Pos best = new Pos();
+                int bestDist = Int32.MaxValue;
+
+                foreach (Pos pos in parent.Keys)
+                {
+                    int dist = Math.Abs(dest.X - pos.X) + Math.Abs(dest.Y - pos.Y);
+
+                    // 제일 우수한 후보를 뽑는다
+                    if (dist < bestDist)
+                    {
+                        best = pos;
+                        bestDist = dist;
+                    }
+                }
+
+                dest = best;
+            }
+
+            {
+                Pos pos = dest;
+                while (parent[pos] != pos)
+                {
+                    cells.Add(Pos2Cell(pos));
+                    pos = parent[pos];
+                }
+                cells.Add(Pos2Cell(pos));
+                cells.Reverse();
+            }
+
+            return cells;
+        }
+
+        Pos Cell2Pos(Vector2Int cell)
 		{
 			// CellPos -> ArrayPos
 			return new Pos(MaxY - cell.y, cell.x - MinX);

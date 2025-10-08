@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Server.Data;
-using Server.Game.Job;
+using Server.Game;
 using System;
 using System.Collections.Generic;
 using System.Text;

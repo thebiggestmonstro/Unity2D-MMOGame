@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Server.Game.Job;
+using Server.Game;
 using ServerCore;
 
 namespace Server

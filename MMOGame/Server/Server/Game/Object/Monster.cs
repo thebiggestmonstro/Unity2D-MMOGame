@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf.Protocol;
 using Server.Data;
 using Server.DB;
-using Server.Game.Job;
+using Server.Game;
 using System;
 using System.Collections.Generic;
 
@@ -103,7 +103,7 @@ namespace Server.Game
                 return;
             }
 
-            List<Vector2Int> path = Room.Map.FindPath(CellPos, _target.CellPos, checkObjects: false);
+            List<Vector2Int> path = Room.Map.FindPath(CellPos, _target.CellPos, checkObjects: true);
             if (path.Count < 2 || path.Count > _chaseCellDist)
             {
                 _target = null;
