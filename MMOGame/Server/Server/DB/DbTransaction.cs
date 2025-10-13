@@ -38,7 +38,7 @@ namespace Server.DB
                     if (success)
                     {
                         // Job 처리 결과에 따라 GameRoom에서 작업
-                        room.Push(() => Console.WriteLine($"Saved Hp : {playerDb.Hp}"));
+                        // room.Push(() => Console.WriteLine($"Saved Hp : {playerDb.Hp}"));
                     }
                 }
             });
@@ -75,7 +75,7 @@ namespace Server.DB
         // (2 - 3) GameRoom에서 Db의 처리 결과에 따라 수행할 함수
         public static void SavePlayerStatus_Step3(int hp)
         {
-            Console.WriteLine($"Saved Hp : {hp}");
+            // Console.WriteLine($"Saved Hp : {hp}");
         }
 
         public static void RewardPlayer(Player player, RewardData rewardData, GameRoom room)

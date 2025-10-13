@@ -21,7 +21,11 @@ namespace Server
 		public PlayerServerState ServerState { get; private set; } = PlayerServerState.ServerStateLogin;
 
 		object _lock = new object();
-		List<ArraySegment<byte>> _reserveQueue = new List<ArraySegment<byte>>();	
+		List<ArraySegment<byte>> _reserveQueue = new List<ArraySegment<byte>>();
+
+		// 패킷을 모아서 처리하기 위한 변수
+		int _reservedSendBytes = 0;
+		long _lastSendTick = 0;
 
         #region Network
 		// 패킷을 단순 예약만 하는 함수
@@ -38,6 +42,7 @@ namespace Server
 			lock (_lock)
 			{
 				_reserveQueue.Add(sendBuffer);
+				_reservedSendBytes += sendBuffer.Length;
 			}
 		}
 
@@ -47,8 +52,14 @@ namespace Server
 			List<ArraySegment<byte>> sendList = null;
 			lock (_lock)
 			{
-				if (_reserveQueue.Count == 0)
+				// 마지막 Send 시점으로부터 0.1초가 지나기 이전이고 패킷이 충분히 모이지 않았다면
+				long delta = (System.Environment.TickCount64 - _lastSendTick);
+				if (delta < 100 && _reservedSendBytes < 10000)
 					return;
+
+				// 패킷 모아 보내기
+				_reservedSendBytes = 0;
+				_lastSendTick = System.Environment.TickCount64;
 
 				sendList = _reserveQueue;
 				_reserveQueue = new List<ArraySegment<byte>>();
@@ -59,8 +70,6 @@ namespace Server
 
 		public override void OnConnected(EndPoint endPoint)
 		{
-			Console.WriteLine($"OnConnected : {endPoint}");
-
 			{ 
 				S_Connected connectedPacket = new S_Connected();
 				Send(connectedPacket);
@@ -87,8 +96,6 @@ namespace Server
             });
 
 			SessionManager.Instance.Remove(this);
-
-			Console.WriteLine($"OnDisconnected : {endPoint}");
 		}
 
 		public override void OnSend(int numOfBytes)
