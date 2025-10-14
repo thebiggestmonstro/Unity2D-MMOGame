@@ -23,35 +23,38 @@ namespace Server.Game
 
 		public Map Map { get; private set; } = new Map();
 
-		// 임시적으로 Init 함수를 static 함수로 변경
-		// 인스턴스의 프로퍼티를 사용하도록 내부 로직을 임시적으로 수정
-		//public static void Init(GameRoom room, int mapId)
-		//{
-		//	room.Map.LoadMap(mapId);
-		//
-		//	// TEMP
-		//	Monster monster = ObjectManager.Instance.Add<Monster>();
-		//	monster.CellPos = new Vector2Int(5, 5);
-		//	room.EnterGame(monster);
-		//}
+        // 임시적으로 Init 함수를 static 함수로 변경
+        // 인스턴스의 프로퍼티를 사용하도록 내부 로직을 임시적으로 수정
+        //public static void Init(GameRoom room, int mapId)
+        //{
+        //	room.Map.LoadMap(mapId);
+        //
+        //	// TEMP
+        //	Monster monster = ObjectManager.Instance.Add<Monster>();
+        //	monster.CellPos = new Vector2Int(5, 5);
+        //	room.EnterGame(monster);
+        //}
 
-		// 해당 좌표가 위치해 있는 Zone을 가져오는 함수
-		public Zone GetZone(Vector2Int cellPos)
-		{
-			int x = (cellPos.x - Map.MinX) / ZoneCells;
-			int y = (Map.MaxY - cellPos.y) / ZoneCells;
+        // 해당 좌표가 위치해 있는 Zone을 가져오는 함수
+        public Zone GetZone(Vector2Int cellPos)
+        {
+            int x = (cellPos.x - Map.MinX) / ZoneCells;
+            int y = (Map.MaxY - cellPos.y) / ZoneCells;
+            return GetZone(y, x);
+        }
 
-			if (x < 0 || x >= Zones.GetLength(1))
-				return null;
+        public Zone GetZone(int indexY, int indexX)
+        {
+            if (indexX < 0 || indexX >= Zones.GetLength(1))
+                return null;
+            if (indexY < 0 || indexY >= Zones.GetLength(0))
+                return null;
 
-			if (y < 0 || y >= Zones.GetLength(0))
-				return null;
+            return Zones[indexY, indexX];
+        }
 
-			return Zones[y, x];
-		}
-
-		// 또는 static 함수로 수정하지 않고 다음의 방법을 사용
-		public void Init(int mapId, int zoneCells)
+        // 또는 static 함수로 수정하지 않고 다음의 방법을 사용
+        public void Init(int mapId, int zoneCells)
 		{ 
 			Map.LoadMap(mapId);
 
@@ -69,7 +72,7 @@ namespace Server.Game
 				}
 			}
 
-			for (int i = 0; i < 1000; i++)
+			for (int i = 0; i < 500; i++)
 			{
                 Monster monster = ObjectManager.Instance.Add<Monster>();
                 monster.Init(1);
@@ -207,18 +210,41 @@ namespace Server.Game
 			}
         }
 
-		public Player FindPlayer(Func<GameObject, bool> condition)
-		{
-			foreach (Player player in _players.Values)
-			{
-				if (condition.Invoke(player))
-					return player;
-			}
+        Player FindPlayer(Func<GameObject, bool> condition)
+        {
+            foreach (Player player in _players.Values)
+            {
+                if (condition.Invoke(player))
+                    return player;
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		public void Broadcast(Vector2Int pos, IMessage packet)
+        public Player FindClosestPlayer(Vector2Int pos, int range)
+        {
+            List<Player> players = GetAdjacentPlayers(pos, range);
+
+            players.Sort((left, right) =>
+            {
+                int leftDist = (left.CellPos - pos).cellDistFromZero;
+                int rightDist = (right.CellPos - pos).cellDistFromZero;
+                return leftDist - rightDist;
+            });
+
+            foreach (Player player in players)
+            {
+                List<Vector2Int> path = Map.FindPath(pos, player.CellPos, checkObjects: true);
+                if (path.Count < 2 || path.Count > range)
+                    continue;
+
+                return player;
+            }
+
+            return null;
+        }
+
+        public void Broadcast(Vector2Int pos, IMessage packet)
 		{
 			List<Zone> zones = GetAdjacentZones(pos);
 
@@ -238,27 +264,45 @@ namespace Server.Game
 			}
 		}
 
-		// 인접한 Zone을 찾는 함수
-		public List<Zone> GetAdjacentZones(Vector2Int cellPos, int cells = VisionCells)
-		{ 
-			HashSet<Zone> zones = new HashSet<Zone>();
+        public List<Player> GetAdjacentPlayers(Vector2Int pos, int range)
+        {
+            List<Zone> zones = GetAdjacentZones(pos, range);
+            return zones.SelectMany(z => z.Players).ToList();
+        }
 
-			int[] delta = new int[2] { -cells, +cells };
-			foreach (int dy in delta)
-			{
-				foreach (int dx in delta)
-				{
-					int y = cellPos.y + dy;
-					int x = cellPos.x + dx;
-					Zone zone = GetZone(new Vector2Int(x, y));
-					if (zone == null)
-						continue;
+        // 인접한 Zone을 찾는 함수
+        public List<Zone> GetAdjacentZones(Vector2Int cellPos, int range = VisionCells)
+		{
+            HashSet<Zone> zones = new HashSet<Zone>();
 
-					zones.Add(zone);
-				}
-			}
+            int maxY = cellPos.y + range;
+            int minY = cellPos.y - range;
+            int maxX = cellPos.x + range;
+            int minX = cellPos.x - range;
 
-			return zones.ToList();
-		}
+            // 좌측 상단
+            Vector2Int leftTop = new Vector2Int(minX, maxY);
+            int minIndexY = (Map.MaxY - leftTop.y) / ZoneCells;
+            int minIndexX = (leftTop.x - Map.MinX) / ZoneCells;
+
+            // 우측 하단
+            Vector2Int rightBot = new Vector2Int(maxX, minY);
+            int maxIndexY = (Map.MaxY - rightBot.y) / ZoneCells;
+            int maxIndexX = (rightBot.x - Map.MinX) / ZoneCells;
+
+            for (int x = minIndexX; x <= maxIndexX; x++)
+            {
+                for (int y = minIndexY; y <= maxIndexY; y++)
+                {
+                    Zone zone = GetZone(y, x);
+                    if (zone == null)
+                        continue;
+
+                    zones.Add(zone);
+                }
+            }
+
+            return zones.ToList();
+        }
 	}
 }
