@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AccountServer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251020145758_First")]
-    partial class First
+    [Migration("20251021013347_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
