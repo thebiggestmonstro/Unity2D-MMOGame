@@ -1,4 +1,5 @@
 ﻿using AccountServer.DB;
+using SharedDB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,4 +19,17 @@ public static class Extensions
 			return false;
 		}
 	}
+
+    public static bool SaveChangesEx(this SharedDbContext db)
+    {
+        try
+        {
+            db.SaveChanges();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

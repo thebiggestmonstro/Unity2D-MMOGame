@@ -60,5 +60,17 @@ namespace Server
                 Console.WriteLine($"Connected ({_sessions.Count}) Players");
             }
         }
-	}
+
+        public int GetBusyScore()
+        {
+            int count = 0;
+
+            lock (_lock)
+            {
+                count = _sessions.Count;
+            }
+
+            return count / 100;
+        }
+    }
 }
