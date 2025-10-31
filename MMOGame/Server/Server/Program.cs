@@ -96,9 +96,11 @@ namespace Server
             t.Start();
         }
 
-        public static string Name { get; } = "Server 01";
+        public static string Name { get; } = "OutLand";
         public static int Port { get; } = 7777;
         public static string IpAddress { get; set; }
+
+        // ServerDB를 추가 / 제거하는 함수를 넣어 리팩토링이 충분히 가능
 
         static void Main(string[] args)
 		{
